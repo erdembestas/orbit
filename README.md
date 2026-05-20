@@ -125,7 +125,7 @@ Cleanup:
 kubectl delete namespace orbit-break-test
 ```
 
-See [examples/README.md](/Users/erdem/Desktop/Orbit/examples/README.md) for details.
+See [examples/README.md](examples/README.md) for details.
 
 ## Runtime Config And Secrets
 
@@ -166,7 +166,7 @@ Required secret files are fail-fast. If a required secret file is missing or emp
 - Mock reasoning suggestions are not executed.
 - Read-only suggestions remain for human review only.
 
-See [docs/SECURITY.md](/Users/erdem/Desktop/Orbit/docs/SECURITY.md).
+See [docs/SECURITY.md](docs/SECURITY.md).
 
 ## Repository Checks
 
@@ -180,12 +180,12 @@ The current local preview was validated end to end against a fresh `orbit-test` 
 
 ## API Documentation
 
-- [docs/API.md](/Users/erdem/Desktop/Orbit/docs/API.md)
-- [api/openapi.yaml](/Users/erdem/Desktop/Orbit/api/openapi.yaml)
+- [docs/API.md](docs/API.md)
+- [api/openapi.yaml](api/openapi.yaml)
 
 ## Roadmap
 
-See [docs/ROADMAP.md](/Users/erdem/Desktop/Orbit/docs/ROADMAP.md).
+See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 
