@@ -183,6 +183,11 @@ The current local preview was validated end to end against a fresh `orbit-test` 
 - [docs/API.md](./docs/API.md)
 - [api/openapi.yaml](./api/openapi.yaml)
 
+## GitHub Release
+
+- GitHub repository: [erdembestas/orbit](https://github.com/erdembestas/orbit)
+- Preview tag: [`v0.0.1`](https://github.com/erdembestas/orbit/releases/tag/v0.0.1)
+
 ## Roadmap
 
 See [docs/ROADMAP.md](./docs/ROADMAP.md).

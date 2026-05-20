@@ -103,3 +103,10 @@ Public release should happen only after user review of:
 - local-only demo credentials in `values-local.yaml`
 - security notes
 - roadmap and preview limitations
+
+## Published Artifacts
+
+- GitHub repository: `https://github.com/erdembestas/orbit`
+- Preview release tag: `v0.0.1`
+- GitHub release page should be created from the `v0.0.1` tag
+- OCI image publishing to GHCR requires a GitHub CLI token refreshed with `write:packages`
