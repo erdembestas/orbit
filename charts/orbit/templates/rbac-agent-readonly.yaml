@@ -1,0 +1,59 @@
+{{- if .Values.agent.rbac.readonlyClusterAccess }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "orbit.agentReadonlyName" . }}
+  labels:
+    app.kubernetes.io/name: orbit-agent
+    app.kubernetes.io/part-of: orbit
+    {{- include "orbit.commonLabels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+      - services
+      - endpoints
+      - configmaps
+      - events
+      - namespaces
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "orbit.agentReadonlyName" . }}
+  labels:
+    app.kubernetes.io/name: orbit-agent
+    app.kubernetes.io/part-of: orbit
+    {{- include "orbit.commonLabels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "orbit.agentServiceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "orbit.agentReadonlyName" . }}
+{{- end }}

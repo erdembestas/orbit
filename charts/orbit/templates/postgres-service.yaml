@@ -1,0 +1,20 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: orbit-postgres
+  labels:
+    app.kubernetes.io/name: orbit-postgres
+    app.kubernetes.io/part-of: orbit
+    {{- include "orbit.commonLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: postgres
+      port: {{ .Values.postgresql.service.port }}
+      targetPort: 5432
+  selector:
+    app.kubernetes.io/name: orbit-postgres
+    app.kubernetes.io/part-of: orbit
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

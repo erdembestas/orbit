@@ -1,0 +1,16 @@
+orbit-api
+orbit-controller
+node_modules
+/tmp/
+*.out
+*.test
+coverage.out
+dist/
+build/
+.DS_Store
+.env
+.env.*
+*.kubeconfig
+*.log
+ui/node_modules
+ui/dist

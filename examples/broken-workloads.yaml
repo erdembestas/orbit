@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: orbit-break-test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crashloop-demo
+  namespace: orbit-break-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crashloop-demo
+  template:
+    metadata:
+      labels:
+        app: crashloop-demo
+    spec:
+      containers:
+        - name: crashloop
+          image: busybox:1.36
+          command: ["sh", "-c", "echo crashloop-demo starting; sleep 2; exit 1"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: probe-port-mismatch
+  namespace: orbit-break-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: probe-port-mismatch
+  template:
+    metadata:
+      labels:
+        app: probe-port-mismatch
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: probe-port-mismatch
+  namespace: orbit-break-test
+spec:
+  selector:
+    app: probe-port-mismatch
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zero-replica-demo
+  namespace: orbit-break-test
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: zero-replica-demo
+  template:
+    metadata:
+      labels:
+        app: zero-replica-demo
+    spec:
+      containers:
+        - name: idle
+          image: busybox:1.36
+          command: ["sh", "-c", "sleep 3600"]

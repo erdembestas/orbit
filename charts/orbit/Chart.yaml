@@ -1,0 +1,6 @@
+apiVersion: v2
+name: orbit
+description: Human-approved automation and remediation control plane for Kubernetes/OpenShift/Linux fleets
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

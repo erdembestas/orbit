@@ -1,0 +1,68 @@
+image:
+  repository: orbit-api
+  tag: local
+  pullPolicy: IfNotPresent
+
+controller:
+  enabled: true
+  replicaCount: 1
+  serviceAccount:
+    create: true
+    name: orbit-controller
+  intervalSeconds: 30
+  resources: {}
+
+ui:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: orbit-ui
+    tag: local
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8080
+  resources: {}
+
+config:
+  ORBIT_ENV: local
+  ORBIT_LOG_LEVEL: debug
+  ORBIT_API_PORT: "8080"
+  ORBIT_AUTH_MODE: local
+  ORBIT_CLUSTER_NAME: minikube
+  ORBIT_CLUSTER_TYPE: kubernetes
+  ORBIT_MODE: single-cluster
+  ORBIT_CONTROLLER_ENABLED: "true"
+  ORBIT_CONTROLLER_INTERVAL_SECONDS: "30"
+  ORBIT_EVIDENCE_MAX_EVENTS: "20"
+  ORBIT_EVIDENCE_MAX_RELATED_RESOURCES: "15"
+  ORBIT_EVIDENCE_MAX_LOG_LINES: "80"
+  ORBIT_EVIDENCE_MAX_TOKEN_ESTIMATE: "4000"
+
+bootstrapAdmin:
+  enabled: true
+  username: admin
+  # Local-only demo value. Not production safe.
+  password: admin
+  # Local-only demo value. Not production safe.
+  jwtSecret: orbit-local-dev-jwt-secret
+
+postgresql:
+  enabled: true
+  auth:
+    database: orbit
+    username: orbit
+    # Local-only demo value. Not production safe.
+    password: orbit-local-password
+  persistence:
+    enabled: true
+    size: 1Gi
+
+db:
+  host: orbit-postgres
+  port: "5432"
+  name: orbit
+  user: orbit
+  # Local-only demo value. Not production safe.
+  password: orbit-local-password
+  sslmode: disable

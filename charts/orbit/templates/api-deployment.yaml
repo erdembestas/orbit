@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orbit-api
+  labels:
+    app.kubernetes.io/name: orbit-api
+    app.kubernetes.io/part-of: orbit
+    {{- include "orbit.commonLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orbit-api
+      app.kubernetes.io/part-of: orbit
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ toJson .Values.config | sha256sum }}
+        checksum/bootstrap: {{ printf "%s:%s:%s" .Values.bootstrapAdmin.username .Values.bootstrapAdmin.password .Values.bootstrapAdmin.jwtSecret | sha256sum }}
+        checksum/db: {{ printf "%s:%s:%s:%s:%s:%s" .Values.db.host .Values.db.port .Values.db.name .Values.db.user .Values.db.password .Values.db.sslmode | sha256sum }}
+        {{- with .Values.api.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        app.kubernetes.io/name: orbit-api
+        app.kubernetes.io/part-of: orbit
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        {{- with .Values.api.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "orbit.apiServiceAccountName" . }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext:
+        fsGroup: {{ .Values.podSecurityContext.fsGroup }}
+      {{- end }}
+      containers:
+        - name: orbit-api
+          image: {{ printf "%s:%s" .Values.image.repository .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.api.service.port }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: {{ .Values.api.service.port }}
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: {{ .Values.api.service.port }}
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
+          {{- if .Values.securityContext.enabled }}
+          securityContext:
+            runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
+            runAsUser: {{ .Values.securityContext.runAsUser }}
+            readOnlyRootFilesystem: {{ .Values.securityContext.readOnlyRootFilesystem }}
+            allowPrivilegeEscalation: {{ .Values.securityContext.allowPrivilegeEscalation }}
+          {{- end }}
+          volumeMounts:
+            - name: orbit-config
+              mountPath: {{ .Values.api.configMountPath }}
+              readOnly: true
+            - name: orbit-secrets
+              mountPath: {{ .Values.api.secretsMountPath }}
+              readOnly: true
+            - name: orbit-db
+              mountPath: {{ .Values.api.dbMountPath }}
+              readOnly: true
+      volumes:
+        - name: orbit-config
+          configMap:
+            name: orbit-config
+        - name: orbit-secrets
+          secret:
+            secretName: orbit-bootstrap-secret
+        - name: orbit-db
+          secret:
+            secretName: orbit-db-secret
+      nodeSelector:
+        {{- toYaml .Values.api.nodeSelector | nindent 8 }}
+      tolerations:
+        {{- toYaml .Values.api.tolerations | nindent 8 }}
+      affinity:
+        {{- toYaml .Values.api.affinity | nindent 8 }}

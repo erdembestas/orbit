@@ -1,0 +1,129 @@
+image:
+  repository: orbit-api
+  tag: local
+  pullPolicy: IfNotPresent
+
+api:
+  replicaCount: 1
+  serviceAccount:
+    create: true
+    name: orbit-api
+  service:
+    type: ClusterIP
+    port: 8080
+  configMountPath: /etc/orbit/config
+  secretsMountPath: /etc/orbit/secrets
+  dbMountPath: /etc/orbit/db
+  resources: {}
+  podAnnotations: {}
+  podLabels: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+controller:
+  enabled: true
+  replicaCount: 1
+  serviceAccount:
+    create: true
+    name: orbit-controller
+  intervalSeconds: 30
+  configMountPath: /etc/orbit/config
+  dbMountPath: /etc/orbit/db
+  resources: {}
+  podAnnotations: {}
+  podLabels: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+ui:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: orbit-ui
+    tag: local
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8080
+  resources: {}
+
+agent:
+  serviceAccount:
+    create: true
+    name: orbit-agent
+  rbac:
+    readonlyClusterAccess: true
+
+config:
+  ORBIT_ENV: local
+  ORBIT_LOG_LEVEL: debug
+  ORBIT_API_PORT: "8080"
+  ORBIT_AUTH_MODE: local
+  ORBIT_CLUSTER_NAME: minikube
+  ORBIT_CLUSTER_TYPE: kubernetes
+  ORBIT_MODE: single-cluster
+  ORBIT_CONTROLLER_ENABLED: "true"
+  ORBIT_CONTROLLER_INTERVAL_SECONDS: "30"
+  ORBIT_EVIDENCE_MAX_EVENTS: "20"
+  ORBIT_EVIDENCE_MAX_RELATED_RESOURCES: "15"
+  ORBIT_EVIDENCE_MAX_LOG_LINES: "80"
+  ORBIT_EVIDENCE_MAX_TOKEN_ESTIMATE: "4000"
+
+bootstrapAdmin:
+  enabled: true
+  username: admin
+  # Must be overridden for any non-local use.
+  password: CHANGE_ME_ADMIN_PASSWORD
+  # Must be overridden for any non-local use.
+  jwtSecret: CHANGE_ME_JWT_SECRET
+
+postgresql:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent
+  auth:
+    database: orbit
+    username: orbit
+    # Must be overridden for any non-local use.
+    password: CHANGE_ME_DB_PASSWORD
+  service:
+    port: 5432
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+  resources: {}
+
+db:
+  host: orbit-postgres
+  port: "5432"
+  name: orbit
+  user: orbit
+  # Must be overridden for any non-local use.
+  password: CHANGE_ME_DB_PASSWORD
+  sslmode: disable
+
+probes:
+  liveness:
+    path: /healthz
+    initialDelaySeconds: 10
+    periodSeconds: 10
+  readiness:
+    path: /readyz
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+securityContext:
+  enabled: true
+  runAsNonRoot: true
+  runAsUser: 65532
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+
+podSecurityContext:
+  enabled: true
+  fsGroup: 65532

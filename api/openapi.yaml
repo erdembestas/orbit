@@ -1,0 +1,275 @@
+openapi: 3.0.3
+info:
+  title: Orbit API
+  version: 0.0.1
+  description: Orbit v0.0.1 single-cluster preview API
+servers:
+  - url: /
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+        expiresIn:
+          type: integer
+      required: [accessToken, tokenType, expiresIn]
+    InfoResponse:
+      type: object
+      properties:
+        app_name:
+          type: string
+        version:
+          type: string
+        environment:
+          type: string
+        cluster_name:
+          type: string
+        cluster_type:
+          type: string
+        auth_mode:
+          type: string
+    MeResponse:
+      type: object
+      properties:
+        username:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        source:
+          type: string
+    EvidenceGenerateRequest:
+      type: object
+      properties:
+        scopeType:
+          type: string
+          enum: [namespace, pod]
+        namespace:
+          type: string
+        name:
+          type: string
+        persist:
+          type: boolean
+      required: [scopeType, namespace]
+security:
+  - BearerAuth: []
+paths:
+  /healthz:
+    get:
+      security: []
+      responses:
+        '200':
+          description: Process health
+  /readyz:
+    get:
+      security: []
+      responses:
+        '200':
+          description: Backend ready
+  /api/v1/info:
+    get:
+      security: []
+      responses:
+        '200':
+          description: Orbit info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfoResponse'
+  /api/v1/auth/login:
+    post:
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/me:
+    get:
+      responses:
+        '200':
+          description: Current principal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+  /api/v1/clusters:
+    get:
+      responses:
+        '200':
+          description: Cluster list
+  /api/v1/finding-rules:
+    get:
+      responses:
+        '200':
+          description: Deterministic finding rule metadata
+  /api/v1/inventory/resources:
+    get:
+      parameters:
+        - in: query
+          name: kind
+          schema: { type: string }
+        - in: query
+          name: namespace
+          schema: { type: string }
+        - in: query
+          name: name
+          schema: { type: string }
+      responses:
+        '200':
+          description: Resource inventory
+  /api/v1/findings:
+    get:
+      parameters:
+        - in: query
+          name: severity
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: namespace
+          schema: { type: string }
+        - in: query
+          name: kind
+          schema: { type: string }
+      responses:
+        '200':
+          description: Findings list
+  /api/v1/findings/{id}:
+    get:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Finding detail
+  /api/v1/findings/{id}/evidence-pack:
+    get:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Finding evidence pack
+  /api/v1/findings/{id}/reason:
+    post:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Mock reasoning result and draft action plan
+  /api/v1/evidence-packs/generate:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvidenceGenerateRequest'
+      responses:
+        '200':
+          description: Generated evidence pack
+  /api/v1/evidence-packs:
+    get:
+      parameters:
+        - in: query
+          name: scopeType
+          schema: { type: string }
+        - in: query
+          name: namespace
+          schema: { type: string }
+        - in: query
+          name: name
+          schema: { type: string }
+        - in: query
+          name: findingId
+          schema: { type: string }
+      responses:
+        '200':
+          description: Evidence pack list
+  /api/v1/evidence-packs/{id}:
+    get:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Evidence pack detail
+  /api/v1/evidence-packs/{id}/reason:
+    post:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Mock reasoning result and draft action plan
+  /api/v1/action-plans:
+    get:
+      responses:
+        '200':
+          description: Action plan list
+  /api/v1/action-plans/{id}:
+    get:
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Action plan detail
+  /api/v1/controller/status:
+    get:
+      responses:
+        '200':
+          description: Controller status
