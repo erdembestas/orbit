@@ -189,4 +189,4 @@ See [docs/ROADMAP.md](/Users/erdem/Desktop/Orbit/docs/ROADMAP.md).
 
 ## License
 
-TBD
+This project is licensed under the Apache License 2.0. See [LICENSE](./LICENSE).
