@@ -16,6 +16,37 @@ It collects Kubernetes inventory and events, creates deterministic findings, gen
 
 Orbit does not apply changes to the cluster in v0.0.1.
 
+![Orbit UI](./docs/images/orbit-ui.png)
+
+## How Orbit Works
+
+Orbit is built as an in-cluster control plane.
+
+1. `orbit-controller` connects to the Kubernetes API of the same cluster where Orbit is installed.
+2. The controller collects inventory, recent events, and optional metrics, then normalizes that state into PostgreSQL.
+3. Deterministic finding rules evaluate the stored state and open findings such as unavailable deployments, unhealthy pods, restart-heavy workloads, and probe mismatches.
+4. Orbit builds compact evidence packs for findings, namespaces, or pods so later reasoning only sees the relevant context instead of a full cluster dump.
+5. `orbit-api` exposes authenticated APIs for inventory, findings, evidence packs, mock reasoning, and draft action plans.
+6. `orbit-ui` presents the operational workflow through the browser and proxies `/api` requests to `orbit-api`.
+
+## Service Responsibilities
+
+- `orbit-ui`
+  - Serves the React UI on port `8080`
+  - Proxies `/api/*` requests to `orbit-api`
+  - Provides dashboard, analysis, findings, evidence pack, and draft action plan screens
+- `orbit-api`
+  - Handles login and JWT-based API access
+  - Reads file-mounted runtime config, secrets, and DB settings
+  - Serves inventory, findings, evidence packs, reasoning, and action plan APIs
+  - Does not hold cluster-wide Kubernetes RBAC
+- `orbit-controller`
+  - Uses in-cluster Kubernetes credentials and read-only RBAC
+  - Collects namespaces, workloads, pods, services, configmaps, and events
+  - Generates findings and evidence packs and stores them in PostgreSQL
+- `orbit-postgres`
+  - Stores auth data, inventory, events, findings, evidence packs, mock reasoning runs, and draft action plans
+
 ## Current Capabilities
 
 - Helm-based local install
@@ -62,12 +93,49 @@ orbit-controller
 - `orbit-controller` observes the cluster with read-only RBAC.
 - `orbit-postgres` stores auth, inventory, findings, evidence packs, mock reasoning runs, and draft action plans.
 
+## Operational Flow
+
+```text
+User
+  -> orbit-ui
+  -> orbit-api
+  -> orbit-postgres
+
+orbit-controller
+  -> Kubernetes API
+  -> orbit-postgres
+
+Stored cluster state
+  -> deterministic finding rules
+  -> evidence packs
+  -> mock reasoning
+  -> draft action plans
+```
+
+In practical use, the normal flow is:
+
+- Deploy Orbit into a single cluster.
+- Let `orbit-controller` collect current cluster state.
+- Review findings or generate a namespace or pod analysis.
+- Inspect the compact evidence pack.
+- Run mock reasoning to produce a draft action plan for human review.
+- No execution or remediation occurs in `v0.0.1`.
+
 ## Components
 
 - `orbit-ui`
 - `orbit-api`
 - `orbit-controller`
 - `orbit-postgres`
+
+## Published Images
+
+- `ghcr.io/erdembestas/orbit-api:v0.0.1`
+- `ghcr.io/erdembestas/orbit-api:latest`
+- `ghcr.io/erdembestas/orbit-ui:v0.0.1`
+- `ghcr.io/erdembestas/orbit-ui:latest`
+
+`orbit-controller` runs from the same image as `orbit-api` with a different command.
 
 ## Local Install With Minikube
 
@@ -91,6 +159,8 @@ Login:
 `admin / admin`
 
 `admin / admin` is local-only and not production safe.
+
+The chart defaults now point at the published GHCR images above. The local Minikube workflow still uses `charts/orbit/values-local.yaml`, which overrides those defaults to use the locally built `orbit-api:local` and `orbit-ui:local` images.
 
 ## Direct API Debug
 

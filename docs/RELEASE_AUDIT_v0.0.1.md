@@ -108,5 +108,8 @@ Public release should happen only after user review of:
 
 - GitHub repository: `https://github.com/erdembestas/orbit`
 - Preview release tag: `v0.0.1`
-- GitHub release page should be created from the `v0.0.1` tag
-- OCI image publishing to GHCR requires a GitHub CLI token refreshed with `write:packages`
+- GitHub release page: `https://github.com/erdembestas/orbit/releases/tag/v0.0.1`
+- OCI image: `ghcr.io/erdembestas/orbit-api:v0.0.1`
+- OCI image: `ghcr.io/erdembestas/orbit-api:latest`
+- OCI image: `ghcr.io/erdembestas/orbit-ui:v0.0.1`
+- OCI image: `ghcr.io/erdembestas/orbit-ui:latest`

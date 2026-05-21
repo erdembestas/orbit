@@ -1,6 +1,6 @@
 image:
-  repository: orbit-api
-  tag: local
+  repository: ghcr.io/erdembestas/orbit-api
+  tag: v0.0.1
   pullPolicy: IfNotPresent
 
 api:
@@ -41,8 +41,8 @@ ui:
   enabled: true
   replicaCount: 1
   image:
-    repository: orbit-ui
-    tag: local
+    repository: ghcr.io/erdembestas/orbit-ui
+    tag: v0.0.1
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
