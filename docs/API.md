@@ -31,6 +31,10 @@ All protected endpoints require:
 - `GET /api/v1/clusters`
 - `GET /api/v1/finding-rules`
 - `GET /api/v1/controller/status`
+- `GET /api/v1/cluster/health`
+- `GET /api/v1/cluster/health/nodes`
+- `GET /api/v1/cluster/health/namespaces`
+- `GET /api/v1/cluster/health/history`
 - `GET /api/v1/inventory/resources`
 - `GET /api/v1/findings`
 - `GET /api/v1/findings/{id}`
@@ -62,6 +66,50 @@ curl -s http://localhost:8081/api/v1/auth/me \
 
 ```bash
 curl -s http://localhost:8081/api/v1/controller/status \
+  -H "Authorization: Bearer $TOKEN" | jq .
+```
+
+## Cluster Health Example
+
+```bash
+curl -s http://localhost:8081/api/v1/cluster/health \
+  -H "Authorization: Bearer $TOKEN" | jq .
+```
+
+Example response shape:
+
+```json
+{
+  "observedAt": "2026-05-21T09:07:17Z",
+  "metricsAvailable": false,
+  "metricsError": "metrics API unavailable",
+  "healthStatus": "warning",
+  "healthScore": 80,
+  "summary": {
+    "nodes": { "count": 1, "readyCount": 1, "notReadyCount": 0 },
+    "pods": { "count": 19, "runningCount": 18, "pendingCount": 0, "failedCount": 1 }
+  }
+}
+```
+
+## Node Health Example
+
+```bash
+curl -s http://localhost:8081/api/v1/cluster/health/nodes \
+  -H "Authorization: Bearer $TOKEN" | jq .
+```
+
+## Namespace Health Example
+
+```bash
+curl -s http://localhost:8081/api/v1/cluster/health/namespaces \
+  -H "Authorization: Bearer $TOKEN" | jq .
+```
+
+## Cluster Health History Example
+
+```bash
+curl -s "http://localhost:8081/api/v1/cluster/health/history?limit=10" \
   -H "Authorization: Bearer $TOKEN" | jq .
 ```
 
@@ -119,3 +167,4 @@ curl -s http://localhost:8081/api/v1/action-plans \
 - Action plans are draft only.
 - No apply, remediation, approval, or execution flow exists.
 - Orbit returns compact evidence packs, not full-cluster dumps, for reasoning inputs.
+- Cluster health returns `metricsAvailable=false` when `metrics-server` is absent, but still reports node conditions, pod counts, and warning-event-based health status.

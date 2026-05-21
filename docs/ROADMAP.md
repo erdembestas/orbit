@@ -18,6 +18,7 @@ Current preview:
 - UI polish
 - Finding rule refinement
 - Better evidence summaries
+- Cluster health snapshots and reporting
 
 ## v0.0.3
 

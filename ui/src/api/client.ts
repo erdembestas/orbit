@@ -115,6 +115,70 @@ export type FindingRule = {
   limitations: string[];
 };
 
+export type ClusterHealthSnapshot = {
+  id: string;
+  cluster_id: string;
+  observed_at: string;
+  metrics_available: boolean;
+  metrics_error?: string;
+  health_status: string;
+  health_score: number;
+  node_count: number;
+  ready_node_count: number;
+  not_ready_node_count: number;
+  cpu_usage_percent?: string;
+  memory_usage_percent?: string;
+  pod_count: number;
+  running_pod_count: number;
+  pending_pod_count: number;
+  failed_pod_count: number;
+  warning_event_count: number;
+  summary_json?: Record<string, unknown>;
+};
+
+export type NodeHealthSnapshot = {
+  id: string;
+  node_name: string;
+  observed_at: string;
+  ready: boolean;
+  cpu_usage_percent?: string;
+  memory_usage_percent?: string;
+  pod_count: number;
+  running_pod_count: number;
+  pending_pod_count: number;
+  failed_pod_count: number;
+  health_status: string;
+  health_score: number;
+};
+
+export type NamespaceHealthSnapshot = {
+  id: string;
+  namespace: string;
+  observed_at: string;
+  pod_count: number;
+  running_pod_count: number;
+  pending_pod_count: number;
+  failed_pod_count: number;
+  restart_count: number;
+  warning_event_count: number;
+  used_cpu_millicores?: string;
+  used_memory_bytes?: string;
+  health_status: string;
+  health_score: number;
+};
+
+export type ClusterHealthResponse = {
+  cluster: Cluster;
+  observedAt: string;
+  metricsAvailable: boolean;
+  metricsError?: string;
+  healthStatus: string;
+  healthScore: number;
+  summary?: Record<string, unknown>;
+  nodes: NodeHealthSnapshot[];
+  namespaces: NamespaceHealthSnapshot[];
+};
+
 export type ReasoningResult = {
   rootCause: string;
   confidence: number;
@@ -180,6 +244,22 @@ export class OrbitApiClient {
 
   async listFindingRules() {
     return this.request<FindingRule[]>("/api/v1/finding-rules", { optional404: true });
+  }
+
+  async getClusterHealth() {
+    return this.request<ClusterHealthResponse>("/api/v1/cluster/health", { optional404: true });
+  }
+
+  async getNodeHealth() {
+    return this.request<NodeHealthSnapshot[]>("/api/v1/cluster/health/nodes", { optional404: true });
+  }
+
+  async getNamespaceHealth() {
+    return this.request<NamespaceHealthSnapshot[]>("/api/v1/cluster/health/namespaces", { optional404: true });
+  }
+
+  async getClusterHealthHistory(limit = 50) {
+    return this.request<ClusterHealthSnapshot[]>(`/api/v1/cluster/health/history?limit=${limit}`, { optional404: true });
   }
 
   async listResources(filters?: { kind?: string; namespace?: string; name?: string }) {

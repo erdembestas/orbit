@@ -131,6 +131,10 @@ if [[ -n "$TOKEN" ]]; then
   run_optional_get "evidence packs" "/api/v1/evidence-packs" "$TOKEN"
   run_optional_get "action plans" "/api/v1/action-plans" "$TOKEN"
   run_optional_get "controller status" "/api/v1/controller/status" "$TOKEN"
+  run_required_check "cluster health" "GET" "/api/v1/cluster/health" "200" '.healthStatus != null and .healthScore != null and .metricsAvailable != null' "" "$TOKEN"
+  run_required_check "cluster health nodes" "GET" "/api/v1/cluster/health/nodes" "200" 'type=="array"' "" "$TOKEN"
+  run_required_check "cluster health namespaces" "GET" "/api/v1/cluster/health/namespaces" "200" 'type=="array"' "" "$TOKEN"
+  run_required_check "cluster health history" "GET" "/api/v1/cluster/health/history?limit=10" "200" 'type=="array"' "" "$TOKEN"
 
   request "POST" "/api/v1/evidence-packs/generate" "{\"scopeType\":\"namespace\",\"namespace\":\"$NAMESPACE\",\"persist\":true}" "$TOKEN"
   case "$REQUEST_STATUS" in

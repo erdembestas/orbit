@@ -291,6 +291,157 @@ type ControllerStatus struct {
 	LatestEvidencePackCount int            `json:"latest_evidence_pack_count"`
 }
 
+type ClusterHealthSnapshot struct {
+	ID                    string          `json:"id"`
+	ClusterID             string          `json:"cluster_id"`
+	ObservedAt            time.Time       `json:"observed_at"`
+	MetricsAvailable      bool            `json:"metrics_available"`
+	MetricsError          string          `json:"metrics_error,omitempty"`
+	NodeCount             int             `json:"node_count"`
+	ReadyNodeCount        int             `json:"ready_node_count"`
+	NotReadyNodeCount     int             `json:"not_ready_node_count"`
+	TotalCPUMillicores    string          `json:"total_cpu_millicores,omitempty"`
+	AllocatableCPUMilli   string          `json:"allocatable_cpu_millicores,omitempty"`
+	UsedCPUMillicores     string          `json:"used_cpu_millicores,omitempty"`
+	CPUUsagePercent       string          `json:"cpu_usage_percent,omitempty"`
+	TotalMemoryBytes      string          `json:"total_memory_bytes,omitempty"`
+	AllocatableMemoryByte string          `json:"allocatable_memory_bytes,omitempty"`
+	UsedMemoryBytes       string          `json:"used_memory_bytes,omitempty"`
+	MemoryUsagePercent    string          `json:"memory_usage_percent,omitempty"`
+	PodCount              int             `json:"pod_count"`
+	RunningPodCount       int             `json:"running_pod_count"`
+	PendingPodCount       int             `json:"pending_pod_count"`
+	FailedPodCount        int             `json:"failed_pod_count"`
+	WarningEventCount     int             `json:"warning_event_count"`
+	HealthStatus          string          `json:"health_status"`
+	HealthScore           int             `json:"health_score"`
+	SummaryJSON           json.RawMessage `json:"summary_json"`
+}
+
+type NodeHealthSnapshot struct {
+	ID                      string          `json:"id"`
+	ClusterHealthSnapshotID string          `json:"cluster_health_snapshot_id"`
+	ClusterID               string          `json:"cluster_id"`
+	NodeName                string          `json:"node_name"`
+	ObservedAt              time.Time       `json:"observed_at"`
+	Ready                   bool            `json:"ready"`
+	ConditionsJSON          json.RawMessage `json:"conditions_json"`
+	CapacityCPUMillicores   string          `json:"capacity_cpu_millicores,omitempty"`
+	AllocatableCPUMilli     string          `json:"allocatable_cpu_millicores,omitempty"`
+	UsedCPUMillicores       string          `json:"used_cpu_millicores,omitempty"`
+	CPUUsagePercent         string          `json:"cpu_usage_percent,omitempty"`
+	CapacityMemoryBytes     string          `json:"capacity_memory_bytes,omitempty"`
+	AllocatableMemoryBytes  string          `json:"allocatable_memory_bytes,omitempty"`
+	UsedMemoryBytes         string          `json:"used_memory_bytes,omitempty"`
+	MemoryUsagePercent      string          `json:"memory_usage_percent,omitempty"`
+	PodCount                int             `json:"pod_count"`
+	RunningPodCount         int             `json:"running_pod_count"`
+	PendingPodCount         int             `json:"pending_pod_count"`
+	FailedPodCount          int             `json:"failed_pod_count"`
+	PressureFlagsJSON       json.RawMessage `json:"pressure_flags_json"`
+	HealthStatus            string          `json:"health_status"`
+	HealthScore             int             `json:"health_score"`
+	EvidenceJSON            json.RawMessage `json:"evidence_json"`
+}
+
+type NamespaceHealthSnapshot struct {
+	ID                      string          `json:"id"`
+	ClusterHealthSnapshotID string          `json:"cluster_health_snapshot_id"`
+	ClusterID               string          `json:"cluster_id"`
+	Namespace               string          `json:"namespace"`
+	ObservedAt              time.Time       `json:"observed_at"`
+	PodCount                int             `json:"pod_count"`
+	RunningPodCount         int             `json:"running_pod_count"`
+	PendingPodCount         int             `json:"pending_pod_count"`
+	FailedPodCount          int             `json:"failed_pod_count"`
+	RestartCount            int             `json:"restart_count"`
+	WarningEventCount       int             `json:"warning_event_count"`
+	UsedCPUMillicores       string          `json:"used_cpu_millicores,omitempty"`
+	UsedMemoryBytes         string          `json:"used_memory_bytes,omitempty"`
+	HealthStatus            string          `json:"health_status"`
+	HealthScore             int             `json:"health_score"`
+	EvidenceJSON            json.RawMessage `json:"evidence_json"`
+}
+
+type CreateClusterHealthSnapshotParams struct {
+	ID                    string
+	ClusterID             string
+	ObservedAt            time.Time
+	MetricsAvailable      bool
+	MetricsError          string
+	NodeCount             int
+	ReadyNodeCount        int
+	NotReadyNodeCount     int
+	TotalCPUMillicores    string
+	AllocatableCPUMilli   string
+	UsedCPUMillicores     string
+	CPUUsagePercent       string
+	TotalMemoryBytes      string
+	AllocatableMemoryByte string
+	UsedMemoryBytes       string
+	MemoryUsagePercent    string
+	PodCount              int
+	RunningPodCount       int
+	PendingPodCount       int
+	FailedPodCount        int
+	WarningEventCount     int
+	HealthStatus          string
+	HealthScore           int
+	SummaryJSON           json.RawMessage
+}
+
+type CreateNodeHealthSnapshotParams struct {
+	ID                      string
+	ClusterHealthSnapshotID string
+	ClusterID               string
+	NodeName                string
+	ObservedAt              time.Time
+	Ready                   bool
+	ConditionsJSON          json.RawMessage
+	CapacityCPUMillicores   string
+	AllocatableCPUMilli     string
+	UsedCPUMillicores       string
+	CPUUsagePercent         string
+	CapacityMemoryBytes     string
+	AllocatableMemoryBytes  string
+	UsedMemoryBytes         string
+	MemoryUsagePercent      string
+	PodCount                int
+	RunningPodCount         int
+	PendingPodCount         int
+	FailedPodCount          int
+	PressureFlagsJSON       json.RawMessage
+	HealthStatus            string
+	HealthScore             int
+	EvidenceJSON            json.RawMessage
+}
+
+type CreateNamespaceHealthSnapshotParams struct {
+	ID                      string
+	ClusterHealthSnapshotID string
+	ClusterID               string
+	Namespace               string
+	ObservedAt              time.Time
+	PodCount                int
+	RunningPodCount         int
+	PendingPodCount         int
+	FailedPodCount          int
+	RestartCount            int
+	WarningEventCount       int
+	UsedCPUMillicores       string
+	UsedMemoryBytes         string
+	HealthStatus            string
+	HealthScore             int
+	EvidenceJSON            json.RawMessage
+}
+
+type ClusterHealthReport struct {
+	Cluster    Cluster                   `json:"cluster"`
+	Snapshot   ClusterHealthSnapshot     `json:"snapshot"`
+	Nodes      []NodeHealthSnapshot      `json:"nodes"`
+	Namespaces []NamespaceHealthSnapshot `json:"namespaces"`
+}
+
 type Store struct {
 	db *sql.DB
 }
@@ -460,6 +611,78 @@ CREATE TABLE IF NOT EXISTS action_plans (
 	plan_json JSONB NOT NULL,
 	created_at TIMESTAMP NOT NULL,
 	updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS cluster_health_snapshots (
+	id UUID PRIMARY KEY,
+	cluster_id UUID REFERENCES clusters(id) ON DELETE CASCADE,
+	observed_at TIMESTAMP NOT NULL,
+	metrics_available BOOLEAN NOT NULL DEFAULT false,
+	metrics_error TEXT NULL,
+	node_count INTEGER NOT NULL DEFAULT 0,
+	ready_node_count INTEGER NOT NULL DEFAULT 0,
+	not_ready_node_count INTEGER NOT NULL DEFAULT 0,
+	total_cpu_millicores NUMERIC NULL,
+	allocatable_cpu_millicores NUMERIC NULL,
+	used_cpu_millicores NUMERIC NULL,
+	cpu_usage_percent NUMERIC NULL,
+	total_memory_bytes NUMERIC NULL,
+	allocatable_memory_bytes NUMERIC NULL,
+	used_memory_bytes NUMERIC NULL,
+	memory_usage_percent NUMERIC NULL,
+	pod_count INTEGER NOT NULL DEFAULT 0,
+	running_pod_count INTEGER NOT NULL DEFAULT 0,
+	pending_pod_count INTEGER NOT NULL DEFAULT 0,
+	failed_pod_count INTEGER NOT NULL DEFAULT 0,
+	warning_event_count INTEGER NOT NULL DEFAULT 0,
+	health_status TEXT NOT NULL,
+	health_score INTEGER NOT NULL,
+	summary_json JSONB NOT NULL DEFAULT '{}'::jsonb
+);
+
+CREATE TABLE IF NOT EXISTS node_health_snapshots (
+	id UUID PRIMARY KEY,
+	cluster_health_snapshot_id UUID REFERENCES cluster_health_snapshots(id) ON DELETE CASCADE,
+	cluster_id UUID REFERENCES clusters(id) ON DELETE CASCADE,
+	node_name TEXT NOT NULL,
+	observed_at TIMESTAMP NOT NULL,
+	ready BOOLEAN NOT NULL DEFAULT false,
+	conditions_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+	capacity_cpu_millicores NUMERIC NULL,
+	allocatable_cpu_millicores NUMERIC NULL,
+	used_cpu_millicores NUMERIC NULL,
+	cpu_usage_percent NUMERIC NULL,
+	capacity_memory_bytes NUMERIC NULL,
+	allocatable_memory_bytes NUMERIC NULL,
+	used_memory_bytes NUMERIC NULL,
+	memory_usage_percent NUMERIC NULL,
+	pod_count INTEGER NOT NULL DEFAULT 0,
+	running_pod_count INTEGER NOT NULL DEFAULT 0,
+	pending_pod_count INTEGER NOT NULL DEFAULT 0,
+	failed_pod_count INTEGER NOT NULL DEFAULT 0,
+	pressure_flags_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+	health_status TEXT NOT NULL,
+	health_score INTEGER NOT NULL,
+	evidence_json JSONB NOT NULL DEFAULT '{}'::jsonb
+);
+
+CREATE TABLE IF NOT EXISTS namespace_health_snapshots (
+	id UUID PRIMARY KEY,
+	cluster_health_snapshot_id UUID REFERENCES cluster_health_snapshots(id) ON DELETE CASCADE,
+	cluster_id UUID REFERENCES clusters(id) ON DELETE CASCADE,
+	namespace TEXT NOT NULL,
+	observed_at TIMESTAMP NOT NULL,
+	pod_count INTEGER NOT NULL DEFAULT 0,
+	running_pod_count INTEGER NOT NULL DEFAULT 0,
+	pending_pod_count INTEGER NOT NULL DEFAULT 0,
+	failed_pod_count INTEGER NOT NULL DEFAULT 0,
+	restart_count INTEGER NOT NULL DEFAULT 0,
+	warning_event_count INTEGER NOT NULL DEFAULT 0,
+	used_cpu_millicores NUMERIC NULL,
+	used_memory_bytes NUMERIC NULL,
+	health_status TEXT NOT NULL,
+	health_score INTEGER NOT NULL,
+	evidence_json JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 `
 
@@ -1658,6 +1881,199 @@ func (s *Store) ControllerStatus(ctx context.Context) (ControllerStatus, error) 
 	}, nil
 }
 
+func (s *Store) CreateClusterHealthSnapshot(ctx context.Context, params CreateClusterHealthSnapshotParams, nodes []CreateNodeHealthSnapshotParams, namespaces []CreateNamespaceHealthSnapshotParams) (ClusterHealthSnapshot, error) {
+	if params.ID == "" {
+		params.ID = uuid.NewString()
+	}
+	summaryJSON, err := ensureJSONObject(params.SummaryJSON)
+	if err != nil {
+		return ClusterHealthSnapshot{}, err
+	}
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return ClusterHealthSnapshot{}, err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(
+		ctx,
+		`INSERT INTO cluster_health_snapshots (
+			id, cluster_id, observed_at, metrics_available, metrics_error, node_count, ready_node_count, not_ready_node_count,
+			total_cpu_millicores, allocatable_cpu_millicores, used_cpu_millicores, cpu_usage_percent,
+			total_memory_bytes, allocatable_memory_bytes, used_memory_bytes, memory_usage_percent,
+			pod_count, running_pod_count, pending_pod_count, failed_pod_count, warning_event_count,
+			health_status, health_score, summary_json
+		) VALUES (
+			$1, $2, $3, $4, $5, $6, $7, $8,
+			$9, $10, $11, $12,
+			$13, $14, $15, $16,
+			$17, $18, $19, $20, $21,
+			$22, $23, $24::jsonb
+		)`,
+		params.ID, params.ClusterID, params.ObservedAt, params.MetricsAvailable, nullString(params.MetricsError), params.NodeCount, params.ReadyNodeCount, params.NotReadyNodeCount,
+		nullNumericString(params.TotalCPUMillicores), nullNumericString(params.AllocatableCPUMilli), nullNumericString(params.UsedCPUMillicores), nullNumericString(params.CPUUsagePercent),
+		nullNumericString(params.TotalMemoryBytes), nullNumericString(params.AllocatableMemoryByte), nullNumericString(params.UsedMemoryBytes), nullNumericString(params.MemoryUsagePercent),
+		params.PodCount, params.RunningPodCount, params.PendingPodCount, params.FailedPodCount, params.WarningEventCount,
+		params.HealthStatus, params.HealthScore, string(summaryJSON),
+	)
+	if err != nil {
+		return ClusterHealthSnapshot{}, err
+	}
+
+	for _, node := range nodes {
+		if node.ID == "" {
+			node.ID = uuid.NewString()
+		}
+		node.ClusterHealthSnapshotID = params.ID
+		if err := s.insertNodeHealthSnapshot(ctx, tx, node); err != nil {
+			return ClusterHealthSnapshot{}, err
+		}
+	}
+	for _, namespace := range namespaces {
+		if namespace.ID == "" {
+			namespace.ID = uuid.NewString()
+		}
+		namespace.ClusterHealthSnapshotID = params.ID
+		if err := s.insertNamespaceHealthSnapshot(ctx, tx, namespace); err != nil {
+			return ClusterHealthSnapshot{}, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return ClusterHealthSnapshot{}, err
+	}
+	return s.getClusterHealthSnapshot(ctx, params.ID)
+}
+
+func (s *Store) GetLatestClusterHealthSnapshot(ctx context.Context, clusterID string) (ClusterHealthSnapshot, error) {
+	row := s.db.QueryRowContext(ctx, `SELECT id, cluster_id, observed_at, metrics_available, COALESCE(metrics_error, ''),
+		node_count, ready_node_count, not_ready_node_count,
+		COALESCE(total_cpu_millicores::text, ''), COALESCE(allocatable_cpu_millicores::text, ''), COALESCE(used_cpu_millicores::text, ''), COALESCE(cpu_usage_percent::text, ''),
+		COALESCE(total_memory_bytes::text, ''), COALESCE(allocatable_memory_bytes::text, ''), COALESCE(used_memory_bytes::text, ''), COALESCE(memory_usage_percent::text, ''),
+		pod_count, running_pod_count, pending_pod_count, failed_pod_count, warning_event_count, health_status, health_score, summary_json
+		FROM cluster_health_snapshots
+		WHERE cluster_id = $1
+		ORDER BY observed_at DESC
+		LIMIT 1`, clusterID)
+	snapshot, err := scanClusterHealthSnapshot(row)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ClusterHealthSnapshot{}, ErrNotFound
+	}
+	return snapshot, err
+}
+
+func (s *Store) ListLatestNodeHealthSnapshots(ctx context.Context, clusterID string) ([]NodeHealthSnapshot, error) {
+	snapshot, err := s.GetLatestClusterHealthSnapshot(ctx, clusterID)
+	if err != nil {
+		return nil, err
+	}
+	return s.listNodeHealthSnapshotsByClusterHealth(ctx, snapshot.ID)
+}
+
+func (s *Store) ListLatestNamespaceHealthSnapshots(ctx context.Context, clusterID string) ([]NamespaceHealthSnapshot, error) {
+	snapshot, err := s.GetLatestClusterHealthSnapshot(ctx, clusterID)
+	if err != nil {
+		return nil, err
+	}
+	return s.listNamespaceHealthSnapshotsByClusterHealth(ctx, snapshot.ID)
+}
+
+func (s *Store) GetClusterHealthHistory(ctx context.Context, clusterID string, limit int) ([]ClusterHealthSnapshot, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	rows, err := s.db.QueryContext(ctx, `SELECT id, cluster_id, observed_at, metrics_available, COALESCE(metrics_error, ''),
+		node_count, ready_node_count, not_ready_node_count,
+		COALESCE(total_cpu_millicores::text, ''), COALESCE(allocatable_cpu_millicores::text, ''), COALESCE(used_cpu_millicores::text, ''), COALESCE(cpu_usage_percent::text, ''),
+		COALESCE(total_memory_bytes::text, ''), COALESCE(allocatable_memory_bytes::text, ''), COALESCE(used_memory_bytes::text, ''), COALESCE(memory_usage_percent::text, ''),
+		pod_count, running_pod_count, pending_pod_count, failed_pod_count, warning_event_count, health_status, health_score, summary_json
+		FROM cluster_health_snapshots
+		WHERE cluster_id = $1
+		ORDER BY observed_at DESC
+		LIMIT $2`, clusterID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var snapshots []ClusterHealthSnapshot
+	for rows.Next() {
+		snapshot, err := scanClusterHealthSnapshot(rows)
+		if err != nil {
+			return nil, err
+		}
+		snapshots = append(snapshots, snapshot)
+	}
+	return snapshots, rows.Err()
+}
+
+func (s *Store) GetNodeHealthHistory(ctx context.Context, clusterID, nodeName string, limit int) ([]NodeHealthSnapshot, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	rows, err := s.db.QueryContext(ctx, `SELECT id, cluster_health_snapshot_id, cluster_id, node_name, observed_at, ready, conditions_json,
+		COALESCE(capacity_cpu_millicores::text, ''), COALESCE(allocatable_cpu_millicores::text, ''), COALESCE(used_cpu_millicores::text, ''), COALESCE(cpu_usage_percent::text, ''),
+		COALESCE(capacity_memory_bytes::text, ''), COALESCE(allocatable_memory_bytes::text, ''), COALESCE(used_memory_bytes::text, ''), COALESCE(memory_usage_percent::text, ''),
+		pod_count, running_pod_count, pending_pod_count, failed_pod_count, pressure_flags_json, health_status, health_score, evidence_json
+		FROM node_health_snapshots WHERE cluster_id = $1 AND node_name = $2 ORDER BY observed_at DESC LIMIT $3`, clusterID, nodeName, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var snapshots []NodeHealthSnapshot
+	for rows.Next() {
+		snapshot, err := scanNodeHealthSnapshot(rows)
+		if err != nil {
+			return nil, err
+		}
+		snapshots = append(snapshots, snapshot)
+	}
+	return snapshots, rows.Err()
+}
+
+func (s *Store) GetNamespaceHealthHistory(ctx context.Context, clusterID, namespace string, limit int) ([]NamespaceHealthSnapshot, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	rows, err := s.db.QueryContext(ctx, `SELECT id, cluster_health_snapshot_id, cluster_id, namespace, observed_at,
+		pod_count, running_pod_count, pending_pod_count, failed_pod_count, restart_count, warning_event_count,
+		COALESCE(used_cpu_millicores::text, ''), COALESCE(used_memory_bytes::text, ''), health_status, health_score, evidence_json
+		FROM namespace_health_snapshots WHERE cluster_id = $1 AND namespace = $2 ORDER BY observed_at DESC LIMIT $3`, clusterID, namespace, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var snapshots []NamespaceHealthSnapshot
+	for rows.Next() {
+		snapshot, err := scanNamespaceHealthSnapshot(rows)
+		if err != nil {
+			return nil, err
+		}
+		snapshots = append(snapshots, snapshot)
+	}
+	return snapshots, rows.Err()
+}
+
+func (s *Store) GetLatestClusterHealthReport(ctx context.Context, clusterID string) (ClusterHealthReport, error) {
+	cluster, err := s.GetCluster(ctx, clusterID)
+	if err != nil {
+		return ClusterHealthReport{}, err
+	}
+	snapshot, err := s.GetLatestClusterHealthSnapshot(ctx, clusterID)
+	if err != nil {
+		return ClusterHealthReport{}, err
+	}
+	nodes, err := s.listNodeHealthSnapshotsByClusterHealth(ctx, snapshot.ID)
+	if err != nil {
+		return ClusterHealthReport{}, err
+	}
+	namespaces, err := s.listNamespaceHealthSnapshotsByClusterHealth(ctx, snapshot.ID)
+	if err != nil {
+		return ClusterHealthReport{}, err
+	}
+	return ClusterHealthReport{Cluster: cluster, Snapshot: snapshot, Nodes: nodes, Namespaces: namespaces}, nil
+}
+
 func (s *Store) getKubernetesEvent(ctx context.Context, eventID string) (KubernetesEvent, error) {
 	row := s.db.QueryRowContext(
 		ctx,
@@ -1707,6 +2123,10 @@ func (s *Store) getLLMRun(ctx context.Context, llmRunID string) (LLMRun, error) 
 
 type scanner interface {
 	Scan(dest ...any) error
+}
+
+type execer interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
 }
 
 func scanFinding(row scanner) (Finding, error) {
@@ -1830,6 +2250,107 @@ func scanActionPlan(row scanner) (ActionPlan, error) {
 	return plan, nil
 }
 
+func scanClusterHealthSnapshot(row scanner) (ClusterHealthSnapshot, error) {
+	var snapshot ClusterHealthSnapshot
+	var summaryRaw []byte
+	err := row.Scan(
+		&snapshot.ID,
+		&snapshot.ClusterID,
+		&snapshot.ObservedAt,
+		&snapshot.MetricsAvailable,
+		&snapshot.MetricsError,
+		&snapshot.NodeCount,
+		&snapshot.ReadyNodeCount,
+		&snapshot.NotReadyNodeCount,
+		&snapshot.TotalCPUMillicores,
+		&snapshot.AllocatableCPUMilli,
+		&snapshot.UsedCPUMillicores,
+		&snapshot.CPUUsagePercent,
+		&snapshot.TotalMemoryBytes,
+		&snapshot.AllocatableMemoryByte,
+		&snapshot.UsedMemoryBytes,
+		&snapshot.MemoryUsagePercent,
+		&snapshot.PodCount,
+		&snapshot.RunningPodCount,
+		&snapshot.PendingPodCount,
+		&snapshot.FailedPodCount,
+		&snapshot.WarningEventCount,
+		&snapshot.HealthStatus,
+		&snapshot.HealthScore,
+		&summaryRaw,
+	)
+	if err != nil {
+		return ClusterHealthSnapshot{}, err
+	}
+	snapshot.SummaryJSON = summaryRaw
+	return snapshot, nil
+}
+
+func scanNodeHealthSnapshot(row scanner) (NodeHealthSnapshot, error) {
+	var snapshot NodeHealthSnapshot
+	var conditionsRaw, pressureRaw, evidenceRaw []byte
+	err := row.Scan(
+		&snapshot.ID,
+		&snapshot.ClusterHealthSnapshotID,
+		&snapshot.ClusterID,
+		&snapshot.NodeName,
+		&snapshot.ObservedAt,
+		&snapshot.Ready,
+		&conditionsRaw,
+		&snapshot.CapacityCPUMillicores,
+		&snapshot.AllocatableCPUMilli,
+		&snapshot.UsedCPUMillicores,
+		&snapshot.CPUUsagePercent,
+		&snapshot.CapacityMemoryBytes,
+		&snapshot.AllocatableMemoryBytes,
+		&snapshot.UsedMemoryBytes,
+		&snapshot.MemoryUsagePercent,
+		&snapshot.PodCount,
+		&snapshot.RunningPodCount,
+		&snapshot.PendingPodCount,
+		&snapshot.FailedPodCount,
+		&pressureRaw,
+		&snapshot.HealthStatus,
+		&snapshot.HealthScore,
+		&evidenceRaw,
+	)
+	if err != nil {
+		return NodeHealthSnapshot{}, err
+	}
+	snapshot.ConditionsJSON = conditionsRaw
+	snapshot.PressureFlagsJSON = pressureRaw
+	snapshot.EvidenceJSON = evidenceRaw
+	return snapshot, nil
+}
+
+func scanNamespaceHealthSnapshot(row scanner) (NamespaceHealthSnapshot, error) {
+	var snapshot NamespaceHealthSnapshot
+	var evidenceRaw []byte
+	err := row.Scan(
+		&snapshot.ID,
+		&snapshot.ClusterHealthSnapshotID,
+		&snapshot.ClusterID,
+		&snapshot.Namespace,
+		&snapshot.ObservedAt,
+		&snapshot.PodCount,
+		&snapshot.RunningPodCount,
+		&snapshot.PendingPodCount,
+		&snapshot.FailedPodCount,
+		&snapshot.RestartCount,
+		&snapshot.WarningEventCount,
+		&snapshot.UsedCPUMillicores,
+		&snapshot.UsedMemoryBytes,
+		&snapshot.HealthStatus,
+		&snapshot.HealthScore,
+		&evidenceRaw,
+	)
+	if err != nil {
+		return NamespaceHealthSnapshot{}, err
+	}
+	snapshot.EvidenceJSON = evidenceRaw
+	return snapshot, nil
+}
+
 func marshalJSON(value any) (string, error) {
 	if value == nil {
 		return "{}", nil
@@ -1898,4 +2419,115 @@ func nullNumericString(value string) any {
 		return nil
 	}
 	return value
+}
+
+func (s *Store) insertNodeHealthSnapshot(ctx context.Context, db execer, params CreateNodeHealthSnapshotParams) error {
+	conditionsJSON, err := ensureJSONObject(params.ConditionsJSON)
+	if err != nil {
+		return err
+	}
+	pressureJSON, err := ensureJSONObject(params.PressureFlagsJSON)
+	if err != nil {
+		return err
+	}
+	evidenceJSON, err := ensureJSONObject(params.EvidenceJSON)
+	if err != nil {
+		return err
+	}
+	_, err = db.ExecContext(ctx, `INSERT INTO node_health_snapshots (
+		id, cluster_health_snapshot_id, cluster_id, node_name, observed_at, ready, conditions_json,
+		capacity_cpu_millicores, allocatable_cpu_millicores, used_cpu_millicores, cpu_usage_percent,
+		capacity_memory_bytes, allocatable_memory_bytes, used_memory_bytes, memory_usage_percent,
+		pod_count, running_pod_count, pending_pod_count, failed_pod_count, pressure_flags_json,
+		health_status, health_score, evidence_json
+	) VALUES (
+		$1, $2, $3, $4, $5, $6, $7::jsonb,
+		$8, $9, $10, $11,
+		$12, $13, $14, $15,
+		$16, $17, $18, $19, $20::jsonb,
+		$21, $22, $23::jsonb
+	)`,
+		params.ID, params.ClusterHealthSnapshotID, params.ClusterID, params.NodeName, params.ObservedAt, params.Ready, string(conditionsJSON),
+		nullNumericString(params.CapacityCPUMillicores), nullNumericString(params.AllocatableCPUMilli), nullNumericString(params.UsedCPUMillicores), nullNumericString(params.CPUUsagePercent),
+		nullNumericString(params.CapacityMemoryBytes), nullNumericString(params.AllocatableMemoryBytes), nullNumericString(params.UsedMemoryBytes), nullNumericString(params.MemoryUsagePercent),
+		params.PodCount, params.RunningPodCount, params.PendingPodCount, params.FailedPodCount, string(pressureJSON),
+		params.HealthStatus, params.HealthScore, string(evidenceJSON),
+	)
+	return err
+}
+
+func (s *Store) insertNamespaceHealthSnapshot(ctx context.Context, db execer, params CreateNamespaceHealthSnapshotParams) error {
+	evidenceJSON, err := ensureJSONObject(params.EvidenceJSON)
+	if err != nil {
+		return err
+	}
+	_, err = db.ExecContext(ctx, `INSERT INTO namespace_health_snapshots (
+		id, cluster_health_snapshot_id, cluster_id, namespace, observed_at,
+		pod_count, running_pod_count, pending_pod_count, failed_pod_count, restart_count,
+		warning_event_count, used_cpu_millicores, used_memory_bytes, health_status, health_score, evidence_json
+	) VALUES (
+		$1, $2, $3, $4, $5,
+		$6, $7, $8, $9, $10,
+		$11, $12, $13, $14, $15, $16::jsonb
+	)`,
+		params.ID, params.ClusterHealthSnapshotID, params.ClusterID, params.Namespace, params.ObservedAt,
+		params.PodCount, params.RunningPodCount, params.PendingPodCount, params.FailedPodCount, params.RestartCount,
+		params.WarningEventCount, nullNumericString(params.UsedCPUMillicores), nullNumericString(params.UsedMemoryBytes), params.HealthStatus, params.HealthScore, string(evidenceJSON),
+	)
+	return err
+}
+
+func (s *Store) getClusterHealthSnapshot(ctx context.Context, snapshotID string) (ClusterHealthSnapshot, error) {
+	row := s.db.QueryRowContext(ctx, `SELECT id, cluster_id, observed_at, metrics_available, COALESCE(metrics_error, ''),
+		node_count, ready_node_count, not_ready_node_count,
+		COALESCE(total_cpu_millicores::text, ''), COALESCE(allocatable_cpu_millicores::text, ''), COALESCE(used_cpu_millicores::text, ''), COALESCE(cpu_usage_percent::text, ''),
+		COALESCE(total_memory_bytes::text, ''), COALESCE(allocatable_memory_bytes::text, ''), COALESCE(used_memory_bytes::text, ''), COALESCE(memory_usage_percent::text, ''),
+		pod_count, running_pod_count, pending_pod_count, failed_pod_count, warning_event_count, health_status, health_score, summary_json
+		FROM cluster_health_snapshots WHERE id = $1`, snapshotID)
+	snapshot, err := scanClusterHealthSnapshot(row)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ClusterHealthSnapshot{}, ErrNotFound
+	}
+	return snapshot, err
+}
+
+func (s *Store) listNodeHealthSnapshotsByClusterHealth(ctx context.Context, clusterHealthSnapshotID string) ([]NodeHealthSnapshot, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT id, cluster_health_snapshot_id, cluster_id, node_name, observed_at, ready, conditions_json,
+		COALESCE(capacity_cpu_millicores::text, ''), COALESCE(allocatable_cpu_millicores::text, ''), COALESCE(used_cpu_millicores::text, ''), COALESCE(cpu_usage_percent::text, ''),
+		COALESCE(capacity_memory_bytes::text, ''), COALESCE(allocatable_memory_bytes::text, ''), COALESCE(used_memory_bytes::text, ''), COALESCE(memory_usage_percent::text, ''),
+		pod_count, running_pod_count, pending_pod_count, failed_pod_count, pressure_flags_json, health_status, health_score, evidence_json
+		FROM node_health_snapshots WHERE cluster_health_snapshot_id = $1 ORDER BY node_name`, clusterHealthSnapshotID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var snapshots []NodeHealthSnapshot
+	for rows.Next() {
+		snapshot, err := scanNodeHealthSnapshot(rows)
+		if err != nil {
+			return nil, err
+		}
+		snapshots = append(snapshots, snapshot)
+	}
+	return snapshots, rows.Err()
+}
+
+func (s *Store) listNamespaceHealthSnapshotsByClusterHealth(ctx context.Context, clusterHealthSnapshotID string) ([]NamespaceHealthSnapshot, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT id, cluster_health_snapshot_id, cluster_id, namespace, observed_at,
+		pod_count, running_pod_count, pending_pod_count, failed_pod_count, restart_count, warning_event_count,
+		COALESCE(used_cpu_millicores::text, ''), COALESCE(used_memory_bytes::text, ''), health_status, health_score, evidence_json
+		FROM namespace_health_snapshots WHERE cluster_health_snapshot_id = $1 ORDER BY namespace`, clusterHealthSnapshotID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var snapshots []NamespaceHealthSnapshot
+	for rows.Next() {
+		snapshot, err := scanNamespaceHealthSnapshot(rows)
+		if err != nil {
+			return nil, err
+		}
+		snapshots = append(snapshots, snapshot)
+	}
+	return snapshots, rows.Err()
 }

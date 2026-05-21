@@ -4,6 +4,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+trap 'rm -f orbit-api orbit-controller; rm -rf ui/dist' EXIT
+
 gofmt -w $(find ./cmd ./internal -name '*.go' -type f | sort)
 go test ./...
 go build ./cmd/orbit-api

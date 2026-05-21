@@ -26,6 +26,13 @@ type Config struct {
 	EvidenceMaxRelatedResources int
 	EvidenceMaxLogLines         int
 	EvidenceMaxTokenEstimate    int
+	ClusterHealthEnabled        bool
+	ClusterHealthIntervalSecs   int
+	NodeCPUWarnPercent          int
+	NodeCPUCriticalPercent      int
+	NodeMemoryWarnPercent       int
+	NodeMemoryCriticalPercent   int
+	ClusterHealthStaleAfterSecs int
 }
 
 func Load() Config {
@@ -47,6 +54,13 @@ func LoadFromDir(dir string) Config {
 		EvidenceMaxRelatedResources: readIntValue(dir, "ORBIT_EVIDENCE_MAX_RELATED_RESOURCES", 15),
 		EvidenceMaxLogLines:         readIntValue(dir, "ORBIT_EVIDENCE_MAX_LOG_LINES", 80),
 		EvidenceMaxTokenEstimate:    readIntValue(dir, "ORBIT_EVIDENCE_MAX_TOKEN_ESTIMATE", 4000),
+		ClusterHealthEnabled:        readBoolValue(dir, "ORBIT_CLUSTER_HEALTH_ENABLED", true),
+		ClusterHealthIntervalSecs:   readIntValue(dir, "ORBIT_CLUSTER_HEALTH_INTERVAL_SECONDS", 30),
+		NodeCPUWarnPercent:          readIntValue(dir, "ORBIT_CLUSTER_HEALTH_NODE_CPU_WARN_PERCENT", 75),
+		NodeCPUCriticalPercent:      readIntValue(dir, "ORBIT_CLUSTER_HEALTH_NODE_CPU_CRITICAL_PERCENT", 90),
+		NodeMemoryWarnPercent:       readIntValue(dir, "ORBIT_CLUSTER_HEALTH_NODE_MEMORY_WARN_PERCENT", 75),
+		NodeMemoryCriticalPercent:   readIntValue(dir, "ORBIT_CLUSTER_HEALTH_NODE_MEMORY_CRITICAL_PERCENT", 90),
+		ClusterHealthStaleAfterSecs: readIntValue(dir, "ORBIT_CLUSTER_HEALTH_STALE_AFTER_SECONDS", 120),
 	}
 }
 

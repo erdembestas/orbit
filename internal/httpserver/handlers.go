@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -38,6 +39,10 @@ type DataStore interface {
 	ListActionPlans(ctx context.Context) ([]store.ActionPlan, error)
 	GetActionPlan(ctx context.Context, actionPlanID string) (store.ActionPlan, error)
 	ControllerStatus(ctx context.Context) (store.ControllerStatus, error)
+	GetLatestClusterHealthReport(ctx context.Context, clusterID string) (store.ClusterHealthReport, error)
+	ListLatestNodeHealthSnapshots(ctx context.Context, clusterID string) ([]store.NodeHealthSnapshot, error)
+	ListLatestNamespaceHealthSnapshots(ctx context.Context, clusterID string) ([]store.NamespaceHealthSnapshot, error)
+	GetClusterHealthHistory(ctx context.Context, clusterID string, limit int) ([]store.ClusterHealthSnapshot, error)
 }
 
 type Reasoner interface {
@@ -98,6 +103,18 @@ type evidenceGenerateRequest struct {
 	Namespace string `json:"namespace"`
 	Name      string `json:"name"`
 	Persist   bool   `json:"persist"`
+}
+
+type clusterHealthResponse struct {
+	Cluster          store.Cluster                   `json:"cluster"`
+	ObservedAt       time.Time                       `json:"observedAt"`
+	MetricsAvailable bool                            `json:"metricsAvailable"`
+	MetricsError     string                          `json:"metricsError,omitempty"`
+	HealthStatus     string                          `json:"healthStatus"`
+	HealthScore      int                             `json:"healthScore"`
+	Summary          map[string]any                  `json:"summary"`
+	Nodes            []store.NodeHealthSnapshot      `json:"nodes"`
+	Namespaces       []store.NamespaceHealthSnapshot `json:"namespaces"`
 }
 
 func newHandler(cfg config.Config, readyChecker ReadyChecker, authService AuthService, dataStore DataStore, evidenceService EvidenceService, reasoner Reasoner, ready *uint32) http.Handler {
@@ -334,6 +351,88 @@ func newHandler(cfg config.Config, readyChecker ReadyChecker, authService AuthSe
 		writeJSON(w, http.StatusOK, status)
 	})))
 
+	mux.Handle("/api/v1/cluster/health/history", requireAuth(authService, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		clusters, err := dataStore.ListClusters(r.Context())
+		if err != nil || len(clusters) == 0 {
+			writeJSON(w, http.StatusInternalServerError, errorResponse{Error: "failed to resolve cluster"})
+			return
+		}
+		limit := 50
+		if raw := r.URL.Query().Get("limit"); raw != "" {
+			if parsed, parseErr := parsePositiveInt(raw); parseErr == nil {
+				limit = parsed
+			}
+		}
+		history, err := dataStore.GetClusterHealthHistory(r.Context(), clusters[0].ID, limit)
+		if errors.Is(err, store.ErrNotFound) {
+			writeJSON(w, http.StatusNotFound, errorResponse{Error: "cluster health not found"})
+			return
+		}
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, errorResponse{Error: "failed to get cluster health history"})
+			return
+		}
+		writeJSON(w, http.StatusOK, history)
+	})))
+
+	mux.Handle("/api/v1/cluster/health/nodes", requireAuth(authService, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		clusters, err := dataStore.ListClusters(r.Context())
+		if err != nil || len(clusters) == 0 {
+			writeJSON(w, http.StatusInternalServerError, errorResponse{Error: "failed to resolve cluster"})
+			return
+		}
+		nodes, err := dataStore.ListLatestNodeHealthSnapshots(r.Context(), clusters[0].ID)
+		if errors.Is(err, store.ErrNotFound) {
+			writeJSON(w, http.StatusNotFound, errorResponse{Error: "cluster health not found"})
+			return
+		}
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, errorResponse{Error: "failed to get node health"})
+			return
+		}
+		writeJSON(w, http.StatusOK, nodes)
+	})))
+
+	mux.Handle("/api/v1/cluster/health/namespaces", requireAuth(authService, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		clusters, err := dataStore.ListClusters(r.Context())
+		if err != nil || len(clusters) == 0 {
+			writeJSON(w, http.StatusInternalServerError, errorResponse{Error: "failed to resolve cluster"})
+			return
+		}
+		namespaces, err := dataStore.ListLatestNamespaceHealthSnapshots(r.Context(), clusters[0].ID)
+		if errors.Is(err, store.ErrNotFound) {
+			writeJSON(w, http.StatusNotFound, errorResponse{Error: "cluster health not found"})
+			return
+		}
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, errorResponse{Error: "failed to get namespace health"})
+			return
+		}
+		writeJSON(w, http.StatusOK, namespaces)
+	})))
+
+	mux.Handle("/api/v1/cluster/health", requireAuth(authService, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		clusters, err := dataStore.ListClusters(r.Context())
+		if err != nil || len(clusters) == 0 {
+			writeJSON(w, http.StatusInternalServerError, errorResponse{Error: "failed to resolve cluster"})
+			return
+		}
+		report, err := dataStore.GetLatestClusterHealthReport(r.Context(), clusters[0].ID)
+		if errors.Is(err, store.ErrNotFound) {
+			writeJSON(w, http.StatusNotFound, errorResponse{Error: "cluster health not found"})
+			return
+		}
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, errorResponse{Error: "failed to get cluster health"})
+			return
+		}
+		response := toClusterHealthResponse(report)
+		if cfg.ClusterHealthStaleAfterSecs > 0 && time.Since(report.Snapshot.ObservedAt) > time.Duration(cfg.ClusterHealthStaleAfterSecs)*time.Second {
+			response.HealthStatus = "unknown"
+		}
+		writeJSON(w, http.StatusOK, response)
+	})))
+
 	return mux
 }
 
@@ -449,6 +548,32 @@ func handleEvidencePackRoutes(w http.ResponseWriter, r *http.Request, dataStore 
 	default:
 		writeJSON(w, http.StatusNotFound, errorResponse{Error: "not found"})
 	}
+}
+
+func toClusterHealthResponse(report store.ClusterHealthReport) clusterHealthResponse {
+	summary := map[string]any{}
+	if len(report.Snapshot.SummaryJSON) > 0 {
+		_ = json.Unmarshal(report.Snapshot.SummaryJSON, &summary)
+	}
+	return clusterHealthResponse{
+		Cluster:          report.Cluster,
+		ObservedAt:       report.Snapshot.ObservedAt,
+		MetricsAvailable: report.Snapshot.MetricsAvailable,
+		MetricsError:     report.Snapshot.MetricsError,
+		HealthStatus:     report.Snapshot.HealthStatus,
+		HealthScore:      report.Snapshot.HealthScore,
+		Summary:          summary,
+		Nodes:            report.Nodes,
+		Namespaces:       report.Namespaces,
+	}
+}
+
+func parsePositiveInt(value string) (int, error) {
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed <= 0 {
+		return 0, errors.New("invalid positive integer")
+	}
+	return parsed, nil
 }
 
 func writeReasoningResponse(w http.ResponseWriter, r *http.Request, dataStore DataStore, reasoner Reasoner, finding *store.Finding, pack store.EvidencePack) {

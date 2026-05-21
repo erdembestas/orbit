@@ -75,6 +75,99 @@ components:
         persist:
           type: boolean
       required: [scopeType, namespace]
+    ClusterHealthResponse:
+      type: object
+      properties:
+        observedAt:
+          type: string
+          format: date-time
+        metricsAvailable:
+          type: boolean
+        metricsError:
+          type: string
+        healthStatus:
+          type: string
+        healthScore:
+          type: integer
+        summary:
+          type: object
+          additionalProperties: true
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeHealthSnapshot'
+        namespaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamespaceHealthSnapshot'
+    NodeHealthSnapshot:
+      type: object
+      properties:
+        node_name:
+          type: string
+        observed_at:
+          type: string
+          format: date-time
+        ready:
+          type: boolean
+        cpu_usage_percent:
+          type: string
+        memory_usage_percent:
+          type: string
+        pod_count:
+          type: integer
+        running_pod_count:
+          type: integer
+        pending_pod_count:
+          type: integer
+        failed_pod_count:
+          type: integer
+        health_status:
+          type: string
+        health_score:
+          type: integer
+    NamespaceHealthSnapshot:
+      type: object
+      properties:
+        namespace:
+          type: string
+        observed_at:
+          type: string
+          format: date-time
+        pod_count:
+          type: integer
+        running_pod_count:
+          type: integer
+        pending_pod_count:
+          type: integer
+        failed_pod_count:
+          type: integer
+        restart_count:
+          type: integer
+        warning_event_count:
+          type: integer
+        used_cpu_millicores:
+          type: string
+        used_memory_bytes:
+          type: string
+        health_status:
+          type: string
+        health_score:
+          type: integer
+    ClusterHealthSnapshot:
+      type: object
+      properties:
+        observed_at:
+          type: string
+          format: date-time
+        metrics_available:
+          type: boolean
+        metrics_error:
+          type: string
+        health_status:
+          type: string
+        health_score:
+          type: integer
 security:
   - BearerAuth: []
 paths:
@@ -273,3 +366,50 @@ paths:
       responses:
         '200':
           description: Controller status
+  /api/v1/cluster/health:
+    get:
+      responses:
+        '200':
+          description: Latest cluster health report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterHealthResponse'
+  /api/v1/cluster/health/nodes:
+    get:
+      responses:
+        '200':
+          description: Latest node health snapshots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NodeHealthSnapshot'
+  /api/v1/cluster/health/namespaces:
+    get:
+      responses:
+        '200':
+          description: Latest namespace health snapshots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NamespaceHealthSnapshot'
+  /api/v1/cluster/health/history:
+    get:
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cluster health history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClusterHealthSnapshot'

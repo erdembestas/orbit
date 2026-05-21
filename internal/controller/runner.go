@@ -8,6 +8,7 @@ import (
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -90,6 +91,10 @@ func (r *Runner) runOnce(ctx context.Context, kubeClient kubernetes.Interface, m
 	if err != nil {
 		return err
 	}
+	nodes, err := kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
 	deployments, err := kubeClient.AppsV1().Deployments("").List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -117,14 +122,27 @@ func (r *Runner) runOnce(ctx context.Context, kubeClient kubernetes.Interface, m
 
 	metricsList := State{}
 	metricsAvailable := false
+	metricsError := ""
 	if metricsClient != nil {
-		podMetrics, err := metricsClient.MetricsV1beta1().PodMetricses("").List(ctx, metav1.ListOptions{})
-		if err != nil {
-			r.logger.Info("metrics api unavailable", "error", err.Error())
-		} else {
+		nodeMetrics, nodeErr := metricsClient.MetricsV1beta1().NodeMetricses().List(ctx, metav1.ListOptions{})
+		podMetrics, podErr := metricsClient.MetricsV1beta1().PodMetricses("").List(ctx, metav1.ListOptions{})
+		switch {
+		case nodeErr != nil && podErr != nil:
+			metricsError = fmt.Sprintf("node metrics: %s; pod metrics: %s", nodeErr.Error(), podErr.Error())
+			r.logger.Info("metrics api unavailable", "error", metricsError)
+		case nodeErr != nil:
+			metricsError = nodeErr.Error()
+			r.logger.Info("metrics api partially unavailable", "error", nodeErr.Error())
+		case podErr != nil:
+			metricsError = podErr.Error()
+			r.logger.Info("metrics api partially unavailable", "error", podErr.Error())
+		default:
+			metricsList.NodeMetrics = nodeMetrics.Items
 			metricsList.PodMetrics = podMetrics.Items
 			metricsAvailable = true
 		}
+	} else {
+		metricsError = "metrics client unavailable"
 	}
 
 	resourcesByUID := map[string]store.KubernetesResource{}
@@ -132,6 +150,13 @@ func (r *Runner) runOnce(ctx context.Context, kubeClient kubernetes.Interface, m
 
 	for _, namespace := range namespaces.Items {
 		resource, err := r.upsertObject(ctx, cluster.ID, "v1", "Namespace", "", namespace.Name, string(namespace.UID), namespace.ResourceVersion, namespace.Labels, namespace.Annotations, string(namespace.Status.Phase), namespace, now)
+		if err != nil {
+			return err
+		}
+		resourcesByUID[resource.UID] = resource
+	}
+	for _, node := range nodes.Items {
+		resource, err := r.upsertObject(ctx, cluster.ID, "v1", "Node", "", node.Name, string(node.UID), node.ResourceVersion, node.Labels, node.Annotations, nodeStatus(node), node, now)
 		if err != nil {
 			return err
 		}
@@ -213,10 +238,12 @@ func (r *Runner) runOnce(ctx context.Context, kubeClient kubernetes.Interface, m
 	}
 
 	state := State{
+		Nodes:       nodes.Items,
 		Deployments: deployments.Items,
 		ReplicaSets: replicaSets.Items,
 		Pods:        pods.Items,
 		Events:      events.Items,
+		NodeMetrics: metricsList.NodeMetrics,
 		PodMetrics:  metricsList.PodMetrics,
 	}
 	findings := EvaluateFindings(state)
@@ -250,6 +277,37 @@ func (r *Runner) runOnce(ctx context.Context, kubeClient kubernetes.Interface, m
 		evidencePackCount++
 	}
 
+	if r.cfg.ClusterHealthEnabled {
+		shouldRecord := true
+		if latest, latestErr := r.store.GetLatestClusterHealthSnapshot(ctx, cluster.ID); latestErr == nil {
+			if now.Sub(latest.ObservedAt) < time.Duration(r.cfg.ClusterHealthIntervalSecs)*time.Second {
+				shouldRecord = false
+			}
+		}
+		if shouldRecord {
+			computation, err := ComputeClusterHealth(r.cfg, cluster.ID, now, nodes.Items, pods.Items, events.Items, metricsList.NodeMetrics, metricsList.PodMetrics, metricsAvailable, metricsError)
+			if err != nil {
+				return err
+			}
+			snapshot, err := r.store.CreateClusterHealthSnapshot(ctx, computation.ClusterSnapshot, computation.NodeSnapshots, computation.NamespaceSnapshots)
+			if err != nil {
+				return err
+			}
+			r.logger.Info(
+				"cluster health snapshot recorded",
+				"observed_at", snapshot.ObservedAt.Format(time.RFC3339),
+				"metrics_available", snapshot.MetricsAvailable,
+				"nodes", snapshot.NodeCount,
+				"ready", snapshot.ReadyNodeCount,
+				"cpu", snapshot.CPUUsagePercent,
+				"memory", snapshot.MemoryUsagePercent,
+				"pods", snapshot.PodCount,
+				"status", snapshot.HealthStatus,
+				"score", snapshot.HealthScore,
+			)
+		}
+	}
+
 	if err := r.store.UpdateClusterLastSeen(ctx, cluster.ID, now); err != nil {
 		return err
 	}
@@ -258,6 +316,7 @@ func (r *Runner) runOnce(ctx context.Context, kubeClient kubernetes.Interface, m
 		"controller scan completed",
 		"cluster", cluster.Name,
 		"namespaces", len(namespaces.Items),
+		"nodes", len(nodes.Items),
 		"deployments", len(deployments.Items),
 		"replicasets", len(replicaSets.Items),
 		"pods", len(pods.Items),
@@ -270,6 +329,13 @@ func (r *Runner) runOnce(ctx context.Context, kubeClient kubernetes.Interface, m
 	)
 
 	return nil
+}
+
+func nodeStatus(node corev1.Node) string {
+	if nodeReady(node) {
+		return "Ready"
+	}
+	return "NotReady"
 }
 
 func (r *Runner) upsertObject(

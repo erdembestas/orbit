@@ -29,10 +29,12 @@ type FindingCandidate struct {
 }
 
 type State struct {
+	Nodes       []corev1.Node
 	Deployments []appsv1.Deployment
 	ReplicaSets []appsv1.ReplicaSet
 	Pods        []corev1.Pod
 	Events      []corev1.Event
+	NodeMetrics []metricsv1beta1.NodeMetrics
 	PodMetrics  []metricsv1beta1.PodMetrics
 }
 

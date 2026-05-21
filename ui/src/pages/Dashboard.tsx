@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import {
   formatNullableTime,
   type ApiError,
+  type ClusterHealthResponse,
   type ControllerStatus,
   type InfoResponse,
   type MeResponse,
@@ -36,6 +37,7 @@ type DashboardPageProps = {
 export default function DashboardPage({ client, me }: DashboardPageProps) {
   const [info, setInfo] = useState<InfoResponse | null>(null);
   const [status, setStatus] = useState<ControllerStatus | null | undefined>(undefined);
+  const [clusterHealth, setClusterHealth] = useState<ClusterHealthResponse | null | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -43,9 +45,14 @@ export default function DashboardPage({ client, me }: DashboardPageProps) {
     setLoading(true);
     setError("");
     try {
-      const [infoResponse, statusResponse] = await Promise.all([client.getInfo(), client.getControllerStatus()]);
+      const [infoResponse, statusResponse, clusterHealthResponse] = await Promise.all([
+        client.getInfo(),
+        client.getControllerStatus(),
+        client.getClusterHealth(),
+      ]);
       setInfo(infoResponse);
       setStatus(statusResponse);
+      setClusterHealth(clusterHealthResponse);
     } catch (err) {
       setError((err as ApiError).message ?? "Failed to load dashboard");
     } finally {
@@ -98,6 +105,9 @@ export default function DashboardPage({ client, me }: DashboardPageProps) {
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, xl: 3 }}>
           <StatCard title="Services" value={counts.Service ?? 0} icon={<SettingsEthernetRoundedIcon />} />
+        </Grid2>
+        <Grid2 size={{ xs: 12, sm: 6, xl: 3 }}>
+          <StatCard title="Health score" value={clusterHealth?.healthScore ?? "-"} icon={<PreviewRoundedIcon />} accent="#1677ff" />
         </Grid2>
       </Grid2>
 
@@ -181,6 +191,44 @@ export default function DashboardPage({ client, me }: DashboardPageProps) {
           )}
         </Grid2>
       </Grid2>
+
+      {clusterHealth && (
+        <Card>
+          <CardContent sx={{ p: 2.25 }}>
+            <Typography variant="h6" sx={{ mb: 1.5 }}>
+              Cluster health
+            </Typography>
+            <Grid2 container spacing={1.5}>
+              <Grid2 size={{ xs: 6, md: 2.4 }}>
+                <Typography variant="body2" color="text.secondary">Status</Typography>
+                <StatusChip status={clusterHealth.healthStatus} />
+              </Grid2>
+              <Grid2 size={{ xs: 6, md: 2.4 }}>
+                <Typography variant="body2" color="text.secondary">Ready nodes</Typography>
+                <Typography variant="body1" fontWeight={700}>
+                  {String((clusterHealth.summary?.nodes as { readyCount?: number } | undefined)?.readyCount ?? "-")}
+                </Typography>
+              </Grid2>
+              <Grid2 size={{ xs: 6, md: 2.4 }}>
+                <Typography variant="body2" color="text.secondary">CPU usage</Typography>
+                <Typography variant="body1" fontWeight={700}>
+                  {String((clusterHealth.summary?.cpu as { usagePercent?: string } | undefined)?.usagePercent ?? "-")}
+                </Typography>
+              </Grid2>
+              <Grid2 size={{ xs: 6, md: 2.4 }}>
+                <Typography variant="body2" color="text.secondary">Memory usage</Typography>
+                <Typography variant="body1" fontWeight={700}>
+                  {String((clusterHealth.summary?.memory as { usagePercent?: string } | undefined)?.usagePercent ?? "-")}
+                </Typography>
+              </Grid2>
+              <Grid2 size={{ xs: 12, md: 2.4 }}>
+                <Typography variant="body2" color="text.secondary">Metrics API</Typography>
+                <StatusChip status={clusterHealth.metricsAvailable ? "active" : "warning"} />
+              </Grid2>
+            </Grid2>
+          </CardContent>
+        </Card>
+      )}
     </Stack>
   );
 }

@@ -23,11 +23,12 @@ Orbit does not apply changes to the cluster in v0.0.1.
 Orbit is built as an in-cluster control plane.
 
 1. `orbit-controller` connects to the Kubernetes API of the same cluster where Orbit is installed.
-2. The controller collects inventory, recent events, and optional metrics, then normalizes that state into PostgreSQL.
+2. The controller collects inventory, recent events, node conditions and capacity, and optional metrics, then normalizes that state into PostgreSQL.
 3. Deterministic finding rules evaluate the stored state and open findings such as unavailable deployments, unhealthy pods, restart-heavy workloads, and probe mismatches.
-4. Orbit builds compact evidence packs for findings, namespaces, or pods so later reasoning only sees the relevant context instead of a full cluster dump.
-5. `orbit-api` exposes authenticated APIs for inventory, findings, evidence packs, mock reasoning, and draft action plans.
-6. `orbit-ui` presents the operational workflow through the browser and proxies `/api` requests to `orbit-api`.
+4. Orbit computes cluster, node, and namespace health snapshots from node conditions, pod phases, warning events, and metrics when `metrics-server` is available.
+5. Orbit builds compact evidence packs for findings, namespaces, or pods so later reasoning only sees the relevant context instead of a full cluster dump.
+6. `orbit-api` exposes authenticated APIs for inventory, findings, evidence packs, cluster health, mock reasoning, and draft action plans.
+7. `orbit-ui` presents the operational workflow through the browser and proxies `/api` requests to `orbit-api`.
 
 ## Service Responsibilities
 
@@ -43,6 +44,7 @@ Orbit is built as an in-cluster control plane.
 - `orbit-controller`
   - Uses in-cluster Kubernetes credentials and read-only RBAC
   - Collects namespaces, workloads, pods, services, configmaps, and events
+  - Collects node conditions, node capacity or allocatable, optional metrics-server data, and cluster health snapshots
   - Generates findings and evidence packs and stores them in PostgreSQL
 - `orbit-postgres`
   - Stores auth data, inventory, events, findings, evidence packs, mock reasoning runs, and draft action plans
@@ -56,6 +58,7 @@ Orbit is built as an in-cluster control plane.
 - PostgreSQL-backed local auth
 - Single-cluster inventory collection
 - Kubernetes resource and event collection
+- Cluster health snapshots and health report APIs
 - Deterministic findings
 - Namespace evidence packs
 - Pod evidence packs
@@ -107,6 +110,7 @@ orbit-controller
 
 Stored cluster state
   -> deterministic finding rules
+  -> cluster health snapshots
   -> evidence packs
   -> mock reasoning
   -> draft action plans
@@ -117,6 +121,7 @@ In practical use, the normal flow is:
 - Deploy Orbit into a single cluster.
 - Let `orbit-controller` collect current cluster state.
 - Review findings or generate a namespace or pod analysis.
+- Review cluster health, node health, and namespace workload pressure.
 - Inspect the compact evidence pack.
 - Run mock reasoning to produce a draft action plan for human review.
 - No execution or remediation occurs in `v0.0.1`.
@@ -212,6 +217,13 @@ Expected config files:
 - `/etc/orbit/config/ORBIT_MODE`
 - `/etc/orbit/config/ORBIT_CONTROLLER_ENABLED`
 - `/etc/orbit/config/ORBIT_CONTROLLER_INTERVAL_SECONDS`
+- `/etc/orbit/config/ORBIT_CLUSTER_HEALTH_ENABLED`
+- `/etc/orbit/config/ORBIT_CLUSTER_HEALTH_INTERVAL_SECONDS`
+- `/etc/orbit/config/ORBIT_CLUSTER_HEALTH_NODE_CPU_WARN_PERCENT`
+- `/etc/orbit/config/ORBIT_CLUSTER_HEALTH_NODE_CPU_CRITICAL_PERCENT`
+- `/etc/orbit/config/ORBIT_CLUSTER_HEALTH_NODE_MEMORY_WARN_PERCENT`
+- `/etc/orbit/config/ORBIT_CLUSTER_HEALTH_NODE_MEMORY_CRITICAL_PERCENT`
+- `/etc/orbit/config/ORBIT_CLUSTER_HEALTH_STALE_AFTER_SECONDS`
 - `/etc/orbit/config/ORBIT_EVIDENCE_MAX_EVENTS`
 - `/etc/orbit/config/ORBIT_EVIDENCE_MAX_RELATED_RESOURCES`
 - `/etc/orbit/config/ORBIT_EVIDENCE_MAX_LOG_LINES`
@@ -251,6 +263,7 @@ The current local preview was validated end to end against a fresh `orbit-test` 
 ## API Documentation
 
 - [docs/API.md](./docs/API.md)
+- [docs/CLUSTER_HEALTH.md](./docs/CLUSTER_HEALTH.md)
 - [api/openapi.yaml](./api/openapi.yaml)
 
 ## GitHub Release
