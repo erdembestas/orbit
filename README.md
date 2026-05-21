@@ -16,7 +16,7 @@ It collects Kubernetes inventory and events, creates deterministic findings, gen
 
 Orbit does not apply changes to the cluster in v0.0.1.
 
-![Orbit UI](./docs/images/orbit-ui.png)
+![Orbit UI](https://raw.githubusercontent.com/erdembestas/orbit/main/docs/images/orbit-ui.png)
 
 ## How Orbit Works
 
