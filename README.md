@@ -59,6 +59,7 @@ Orbit is built as an in-cluster control plane.
 - Single-cluster inventory collection
 - Kubernetes resource and event collection
 - Cluster health snapshots and health report APIs
+- Cluster Health dashboard page
 - Deterministic findings
 - Namespace evidence packs
 - Pod evidence packs
@@ -121,6 +122,7 @@ In practical use, the normal flow is:
 - Deploy Orbit into a single cluster.
 - Let `orbit-controller` collect current cluster state.
 - Review findings or generate a namespace or pod analysis.
+- Review Cluster Health for node readiness, namespace pressure, and recent health history.
 - Review cluster health, node health, and namespace workload pressure.
 - Inspect the compact evidence pack.
 - Run mock reasoning to produce a draft action plan for human review.
@@ -193,6 +195,7 @@ Then in the UI:
 - Generate a namespace evidence pack
 - Run mock reasoning
 - Switch to pod analysis and inspect a failing pod in the same namespace
+- Open `Cluster Health` to review node and namespace pressure after the controller interval
 
 Cleanup:
 
@@ -247,6 +250,7 @@ Required secret files are fail-fast. If a required secret file is missing or emp
 - No remediation or apply path exists in v0.0.1.
 - Mock reasoning suggestions are not executed.
 - Read-only suggestions remain for human review only.
+- `metrics-server` is optional. If it is missing, Cluster Health still works with `metricsAvailable=false`.
 
 See [docs/SECURITY.md](./docs/SECURITY.md).
 

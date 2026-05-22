@@ -17,6 +17,9 @@ const styles: Record<string, ChipProps["color"]> = {
   running: "success",
   healthy: "success",
   succeeded: "success",
+  warning: "warning",
+  critical: "error",
+  unknown: "default",
   unavailable: "error",
   pending: "warning",
 };

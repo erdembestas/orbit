@@ -73,6 +73,15 @@ Namespace scoring is deterministic:
 
 All require `Authorization: Bearer <token>`.
 
+## UI Display
+
+The Orbit UI exposes cluster health in two places:
+
+- `Dashboard` shows a compact summary with score, status, ready nodes, pod counts, and metrics availability.
+- `Cluster Health` shows the latest cluster report, node health table, namespace pressure table, and recent history.
+
+If metrics are unavailable, the UI shows a warning banner and treats CPU or memory percentages as unavailable instead of failing the page.
+
 ## RBAC
 
 Only `orbit-controller` reads cluster health inputs.

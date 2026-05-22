@@ -16,6 +16,7 @@ import {
 import AppShell, { type NavItem } from "./components/AppShell";
 import ActionPlansPage from "./pages/ActionPlans";
 import AnalyzePage from "./pages/Analyze";
+import ClusterHealthPage from "./pages/ClusterHealth";
 import ControllerStatusPage from "./pages/ControllerStatus";
 import DashboardPage from "./pages/Dashboard";
 import EvidencePacksPage from "./pages/EvidencePacks";
@@ -28,6 +29,7 @@ const tokenStorageKey = "orbit-token";
 
 const navItems: NavItem[] = [
   { key: "dashboard", label: "Dashboard", icon: <DashboardRoundedIcon /> },
+  { key: "cluster-health", label: "Cluster Health", icon: <MonitorHeartRoundedIcon /> },
   { key: "analyze", label: "Analyze", icon: <SearchRoundedIcon /> },
   { key: "inventory", label: "Inventory", icon: <StorageRoundedIcon /> },
   { key: "findings", label: "Findings", icon: <FactCheckRoundedIcon /> },
@@ -105,6 +107,7 @@ export default function App() {
         onLogout={clearSession}
       >
         {page === "dashboard" && <DashboardPage client={client} me={me} />}
+        {page === "cluster-health" && <ClusterHealthPage client={client} />}
         {page === "analyze" && <AnalyzePage client={client} />}
         {page === "inventory" && <InventoryPage client={client} />}
         {page === "findings" && <FindingsPage client={client} />}

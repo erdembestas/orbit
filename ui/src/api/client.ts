@@ -117,54 +117,74 @@ export type FindingRule = {
 
 export type ClusterHealthSnapshot = {
   id: string;
-  cluster_id: string;
-  observed_at: string;
-  metrics_available: boolean;
-  metrics_error?: string;
-  health_status: string;
-  health_score: number;
-  node_count: number;
-  ready_node_count: number;
-  not_ready_node_count: number;
-  cpu_usage_percent?: string;
-  memory_usage_percent?: string;
-  pod_count: number;
-  running_pod_count: number;
-  pending_pod_count: number;
-  failed_pod_count: number;
-  warning_event_count: number;
-  summary_json?: Record<string, unknown>;
+  clusterId: string;
+  observedAt: string;
+  metricsAvailable: boolean;
+  metricsError?: string;
+  healthStatus: string;
+  healthScore: number;
+  nodeCount: number;
+  readyNodeCount: number;
+  notReadyNodeCount: number;
+  totalCpuMillicores: number | null;
+  allocatableCpuMillicores: number | null;
+  usedCpuMillicores: number | null;
+  cpuUsagePercent: number | null;
+  totalMemoryBytes: number | null;
+  allocatableMemoryBytes: number | null;
+  usedMemoryBytes: number | null;
+  memoryUsagePercent: number | null;
+  podCount: number;
+  runningPodCount: number;
+  pendingPodCount: number;
+  failedPodCount: number;
+  warningEventCount: number;
+  summary: Record<string, unknown>;
 };
 
 export type NodeHealthSnapshot = {
   id: string;
-  node_name: string;
-  observed_at: string;
+  clusterHealthSnapshotId: string;
+  clusterId: string;
+  nodeName: string;
+  observedAt: string;
   ready: boolean;
-  cpu_usage_percent?: string;
-  memory_usage_percent?: string;
-  pod_count: number;
-  running_pod_count: number;
-  pending_pod_count: number;
-  failed_pod_count: number;
-  health_status: string;
-  health_score: number;
+  conditions: Record<string, unknown>;
+  capacityCpuMillicores: number | null;
+  allocatableCpuMillicores: number | null;
+  usedCpuMillicores: number | null;
+  cpuUsagePercent: number | null;
+  capacityMemoryBytes: number | null;
+  allocatableMemoryBytes: number | null;
+  usedMemoryBytes: number | null;
+  memoryUsagePercent: number | null;
+  podCount: number;
+  runningPodCount: number;
+  pendingPodCount: number;
+  failedPodCount: number;
+  pressureFlags: Record<string, unknown>;
+  healthStatus: string;
+  healthScore: number;
+  evidence: Record<string, unknown>;
 };
 
 export type NamespaceHealthSnapshot = {
   id: string;
+  clusterHealthSnapshotId: string;
+  clusterId: string;
   namespace: string;
-  observed_at: string;
-  pod_count: number;
-  running_pod_count: number;
-  pending_pod_count: number;
-  failed_pod_count: number;
-  restart_count: number;
-  warning_event_count: number;
-  used_cpu_millicores?: string;
-  used_memory_bytes?: string;
-  health_status: string;
-  health_score: number;
+  observedAt: string;
+  podCount: number;
+  runningPodCount: number;
+  pendingPodCount: number;
+  failedPodCount: number;
+  restartCount: number;
+  warningEventCount: number;
+  usedCpuMillicores: number | null;
+  usedMemoryBytes: number | null;
+  healthStatus: string;
+  healthScore: number;
+  evidence: Record<string, unknown>;
 };
 
 export type ClusterHealthResponse = {
@@ -174,7 +194,21 @@ export type ClusterHealthResponse = {
   metricsError?: string;
   healthStatus: string;
   healthScore: number;
-  summary?: Record<string, unknown>;
+  nodeCount: number;
+  readyNodeCount: number;
+  notReadyNodeCount: number;
+  podCount: number;
+  runningPodCount: number;
+  pendingPodCount: number;
+  failedPodCount: number;
+  warningEventCount: number;
+  allocatableCpuMillicores: number | null;
+  usedCpuMillicores: number | null;
+  cpuUsagePercent: number | null;
+  allocatableMemoryBytes: number | null;
+  usedMemoryBytes: number | null;
+  memoryUsagePercent: number | null;
+  summary: Record<string, unknown>;
   nodes: NodeHealthSnapshot[];
   namespaces: NamespaceHealthSnapshot[];
 };
@@ -247,19 +281,31 @@ export class OrbitApiClient {
   }
 
   async getClusterHealth() {
-    return this.request<ClusterHealthResponse>("/api/v1/cluster/health", { optional404: true });
+    const response = await this.request<Record<string, unknown>>("/api/v1/cluster/health", { optional404: true });
+    return response ? normalizeClusterHealthResponse(response) : null;
   }
 
-  async getNodeHealth() {
-    return this.request<NodeHealthSnapshot[]>("/api/v1/cluster/health/nodes", { optional404: true });
+  async getClusterHealthNodes() {
+    const response = await this.request<Record<string, unknown>[]>("/api/v1/cluster/health/nodes", { optional404: true });
+    return response ? response.map(normalizeNodeHealthSnapshot) : null;
   }
 
-  async getNamespaceHealth() {
-    return this.request<NamespaceHealthSnapshot[]>("/api/v1/cluster/health/namespaces", { optional404: true });
+  async getClusterHealthNamespaces() {
+    const response = await this.request<Record<string, unknown>[]>("/api/v1/cluster/health/namespaces", { optional404: true });
+    return response ? response.map(normalizeNamespaceHealthSnapshot) : null;
   }
 
   async getClusterHealthHistory(limit = 50) {
-    return this.request<ClusterHealthSnapshot[]>(`/api/v1/cluster/health/history?limit=${limit}`, { optional404: true });
+    const response = await this.request<Record<string, unknown>[]>(`/api/v1/cluster/health/history?limit=${limit}`, { optional404: true });
+    return response ? response.map(normalizeClusterHealthSnapshot) : null;
+  }
+
+  async getNodeHealth() {
+    return this.getClusterHealthNodes();
+  }
+
+  async getNamespaceHealth() {
+    return this.getClusterHealthNamespaces();
   }
 
   async listResources(filters?: { kind?: string; namespace?: string; name?: string }) {
@@ -458,10 +504,148 @@ function normalizeReasoningResponse(input: Record<string, unknown>): ReasoningRe
   };
 }
 
+function normalizeClusterHealthResponse(input: Record<string, unknown>): ClusterHealthResponse {
+  const summary = isRecord(input.summary) ? input.summary : {};
+  const nodes = Array.isArray(input.nodes) ? input.nodes.filter(isRecord).map(normalizeNodeHealthSnapshot) : [];
+  const namespaces = Array.isArray(input.namespaces)
+    ? input.namespaces.filter(isRecord).map(normalizeNamespaceHealthSnapshot)
+    : [];
+
+  return {
+    cluster: (input.cluster as Cluster) ?? { id: "", name: "", type: "", mode: "", status: "" },
+    observedAt: String(input.observedAt ?? ""),
+    metricsAvailable: Boolean(input.metricsAvailable),
+    metricsError: optionalString(input.metricsError),
+    healthStatus: String(input.healthStatus ?? "unknown"),
+    healthScore: numberValue(input.healthScore, 0),
+    nodeCount: readSummaryNumber(summary, "nodes", "count"),
+    readyNodeCount: readSummaryNumber(summary, "nodes", "readyCount"),
+    notReadyNodeCount: readSummaryNumber(summary, "nodes", "notReadyCount"),
+    podCount: readSummaryNumber(summary, "pods", "count"),
+    runningPodCount: readSummaryNumber(summary, "pods", "runningCount"),
+    pendingPodCount: readSummaryNumber(summary, "pods", "pendingCount"),
+    failedPodCount: readSummaryNumber(summary, "pods", "failedCount"),
+    warningEventCount: readSummaryNumber(summary, "events", "warningCount"),
+    allocatableCpuMillicores: readSummaryNullableNumber(summary, "cpu", "allocatableMillicores"),
+    usedCpuMillicores: readSummaryNullableNumber(summary, "cpu", "usedMillicores"),
+    cpuUsagePercent: readSummaryNullableNumber(summary, "cpu", "usagePercent"),
+    allocatableMemoryBytes: readSummaryNullableNumber(summary, "memory", "allocatableBytes"),
+    usedMemoryBytes: readSummaryNullableNumber(summary, "memory", "usedBytes"),
+    memoryUsagePercent: readSummaryNullableNumber(summary, "memory", "usagePercent"),
+    summary,
+    nodes,
+    namespaces,
+  };
+}
+
+function normalizeClusterHealthSnapshot(input: Record<string, unknown>): ClusterHealthSnapshot {
+  return {
+    id: String(input.id ?? ""),
+    clusterId: String(input.cluster_id ?? ""),
+    observedAt: String(input.observed_at ?? ""),
+    metricsAvailable: Boolean(input.metrics_available),
+    metricsError: optionalString(input.metrics_error),
+    healthStatus: String(input.health_status ?? "unknown"),
+    healthScore: numberValue(input.health_score, 0),
+    nodeCount: numberValue(input.node_count, 0),
+    readyNodeCount: numberValue(input.ready_node_count, 0),
+    notReadyNodeCount: numberValue(input.not_ready_node_count, 0),
+    totalCpuMillicores: nullableNumber(input.total_cpu_millicores),
+    allocatableCpuMillicores: nullableNumber(input.allocatable_cpu_millicores),
+    usedCpuMillicores: nullableNumber(input.used_cpu_millicores),
+    cpuUsagePercent: nullableNumber(input.cpu_usage_percent),
+    totalMemoryBytes: nullableNumber(input.total_memory_bytes),
+    allocatableMemoryBytes: nullableNumber(input.allocatable_memory_bytes),
+    usedMemoryBytes: nullableNumber(input.used_memory_bytes),
+    memoryUsagePercent: nullableNumber(input.memory_usage_percent),
+    podCount: numberValue(input.pod_count, 0),
+    runningPodCount: numberValue(input.running_pod_count, 0),
+    pendingPodCount: numberValue(input.pending_pod_count, 0),
+    failedPodCount: numberValue(input.failed_pod_count, 0),
+    warningEventCount: numberValue(input.warning_event_count, 0),
+    summary: isRecord(input.summary_json) ? input.summary_json : {},
+  };
+}
+
+function normalizeNodeHealthSnapshot(input: Record<string, unknown>): NodeHealthSnapshot {
+  return {
+    id: String(input.id ?? ""),
+    clusterHealthSnapshotId: String(input.cluster_health_snapshot_id ?? ""),
+    clusterId: String(input.cluster_id ?? ""),
+    nodeName: String(input.node_name ?? ""),
+    observedAt: String(input.observed_at ?? ""),
+    ready: Boolean(input.ready),
+    conditions: isRecord(input.conditions_json) ? input.conditions_json : {},
+    capacityCpuMillicores: nullableNumber(input.capacity_cpu_millicores),
+    allocatableCpuMillicores: nullableNumber(input.allocatable_cpu_millicores),
+    usedCpuMillicores: nullableNumber(input.used_cpu_millicores),
+    cpuUsagePercent: nullableNumber(input.cpu_usage_percent),
+    capacityMemoryBytes: nullableNumber(input.capacity_memory_bytes),
+    allocatableMemoryBytes: nullableNumber(input.allocatable_memory_bytes),
+    usedMemoryBytes: nullableNumber(input.used_memory_bytes),
+    memoryUsagePercent: nullableNumber(input.memory_usage_percent),
+    podCount: numberValue(input.pod_count, 0),
+    runningPodCount: numberValue(input.running_pod_count, 0),
+    pendingPodCount: numberValue(input.pending_pod_count, 0),
+    failedPodCount: numberValue(input.failed_pod_count, 0),
+    pressureFlags: isRecord(input.pressure_flags_json) ? input.pressure_flags_json : {},
+    healthStatus: String(input.health_status ?? "unknown"),
+    healthScore: numberValue(input.health_score, 0),
+    evidence: isRecord(input.evidence_json) ? input.evidence_json : {},
+  };
+}
+
+function normalizeNamespaceHealthSnapshot(input: Record<string, unknown>): NamespaceHealthSnapshot {
+  return {
+    id: String(input.id ?? ""),
+    clusterHealthSnapshotId: String(input.cluster_health_snapshot_id ?? ""),
+    clusterId: String(input.cluster_id ?? ""),
+    namespace: String(input.namespace ?? ""),
+    observedAt: String(input.observed_at ?? ""),
+    podCount: numberValue(input.pod_count, 0),
+    runningPodCount: numberValue(input.running_pod_count, 0),
+    pendingPodCount: numberValue(input.pending_pod_count, 0),
+    failedPodCount: numberValue(input.failed_pod_count, 0),
+    restartCount: numberValue(input.restart_count, 0),
+    warningEventCount: numberValue(input.warning_event_count, 0),
+    usedCpuMillicores: nullableNumber(input.used_cpu_millicores),
+    usedMemoryBytes: nullableNumber(input.used_memory_bytes),
+    healthStatus: String(input.health_status ?? "unknown"),
+    healthScore: numberValue(input.health_score, 0),
+    evidence: isRecord(input.evidence_json) ? input.evidence_json : {},
+  };
+}
+
 function optionalString(value: unknown) {
   return typeof value === "string" && value !== "" ? value : undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function nullableNumber(value: unknown) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === "string" && value !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function numberValue(value: unknown, fallback: number) {
+  const parsed = nullableNumber(value);
+  return parsed ?? fallback;
+}
+
+function readSummaryNumber(summary: Record<string, unknown>, section: string, key: string) {
+  const value = isRecord(summary[section]) ? summary[section][key] : undefined;
+  return numberValue(value, 0);
+}
+
+function readSummaryNullableNumber(summary: Record<string, unknown>, section: string, key: string) {
+  const value = isRecord(summary[section]) ? summary[section][key] : undefined;
+  return nullableNumber(value);
 }

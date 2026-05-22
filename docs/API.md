@@ -92,6 +92,8 @@ Example response shape:
 }
 ```
 
+The same health report is shown in the UI on `Dashboard` and `Cluster Health`.
+
 ## Node Health Example
 
 ```bash
@@ -168,3 +170,4 @@ curl -s http://localhost:8081/api/v1/action-plans \
 - No apply, remediation, approval, or execution flow exists.
 - Orbit returns compact evidence packs, not full-cluster dumps, for reasoning inputs.
 - Cluster health returns `metricsAvailable=false` when `metrics-server` is absent, but still reports node conditions, pod counts, and warning-event-based health status.
+- The UI reads all cluster health data through the same authenticated `/api/v1/cluster/health*` endpoints.

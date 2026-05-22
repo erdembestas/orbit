@@ -3,9 +3,11 @@ import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
 import LayersRoundedIcon from "@mui/icons-material/LayersRounded";
 import PreviewRoundedIcon from "@mui/icons-material/PreviewRounded";
 import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded";
+import ShowChartRoundedIcon from "@mui/icons-material/ShowChartRounded";
 import SettingsEthernetRoundedIcon from "@mui/icons-material/SettingsEthernetRounded";
 import ViewStreamRoundedIcon from "@mui/icons-material/ViewStreamRounded";
 import {
+  Alert,
   Card,
   CardContent,
   Grid2,
@@ -24,7 +26,9 @@ import {
 } from "../api/client";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
+import HealthStatusChip from "../components/HealthStatusChip";
 import LoadingState from "../components/LoadingState";
+import MetricBar from "../components/MetricBar";
 import PageHeader from "../components/PageHeader";
 import StatCard from "../components/StatCard";
 import StatusChip from "../components/StatusChip";
@@ -107,7 +111,7 @@ export default function DashboardPage({ client, me }: DashboardPageProps) {
           <StatCard title="Services" value={counts.Service ?? 0} icon={<SettingsEthernetRoundedIcon />} />
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, xl: 3 }}>
-          <StatCard title="Health score" value={clusterHealth?.healthScore ?? "-"} icon={<PreviewRoundedIcon />} accent="#1677ff" />
+          <StatCard title="Health score" value={clusterHealth?.healthScore ?? "-"} icon={<ShowChartRoundedIcon />} accent="#1677ff" />
         </Grid2>
       </Grid2>
 
@@ -195,37 +199,66 @@ export default function DashboardPage({ client, me }: DashboardPageProps) {
       {clusterHealth && (
         <Card>
           <CardContent sx={{ p: 2.25 }}>
-            <Typography variant="h6" sx={{ mb: 1.5 }}>
-              Cluster health
-            </Typography>
-            <Grid2 container spacing={1.5}>
-              <Grid2 size={{ xs: 6, md: 2.4 }}>
-                <Typography variant="body2" color="text.secondary">Status</Typography>
-                <StatusChip status={clusterHealth.healthStatus} />
+            <Stack spacing={1.75}>
+              <Stack
+                direction={{ xs: "column", md: "row" }}
+                justifyContent="space-between"
+                alignItems={{ xs: "flex-start", md: "center" }}
+                spacing={1}
+              >
+                <Typography variant="h6">Cluster health</Typography>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  <HealthStatusChip status={clusterHealth.healthStatus} />
+                  <StatusChip status={clusterHealth.metricsAvailable ? "active" : "warning"} />
+                </Stack>
+              </Stack>
+
+              {!clusterHealth.metricsAvailable && (
+                <Alert severity="warning">
+                  Metrics API is unavailable. Orbit is using node conditions, pod phases, and events only.
+                </Alert>
+              )}
+
+              <Grid2 container spacing={1.5}>
+                <Grid2 size={{ xs: 6, md: 3 }}>
+                  <Typography variant="body2" color="text.secondary">Nodes ready</Typography>
+                  <Typography variant="body1" fontWeight={700}>
+                    {clusterHealth.readyNodeCount} / {clusterHealth.nodeCount}
+                  </Typography>
+                </Grid2>
+                <Grid2 size={{ xs: 6, md: 3 }}>
+                  <Typography variant="body2" color="text.secondary">Running pods</Typography>
+                  <Typography variant="body1" fontWeight={700}>
+                    {clusterHealth.runningPodCount}
+                  </Typography>
+                </Grid2>
+                <Grid2 size={{ xs: 6, md: 3 }}>
+                  <Typography variant="body2" color="text.secondary">Pending pods</Typography>
+                  <Typography variant="body1" fontWeight={700}>
+                    {clusterHealth.pendingPodCount}
+                  </Typography>
+                </Grid2>
+                <Grid2 size={{ xs: 6, md: 3 }}>
+                  <Typography variant="body2" color="text.secondary">Failed pods</Typography>
+                  <Typography variant="body1" fontWeight={700}>
+                    {clusterHealth.failedPodCount}
+                  </Typography>
+                </Grid2>
               </Grid2>
-              <Grid2 size={{ xs: 6, md: 2.4 }}>
-                <Typography variant="body2" color="text.secondary">Ready nodes</Typography>
-                <Typography variant="body1" fontWeight={700}>
-                  {String((clusterHealth.summary?.nodes as { readyCount?: number } | undefined)?.readyCount ?? "-")}
-                </Typography>
+
+              <Grid2 container spacing={1.5}>
+                <Grid2 size={{ xs: 12, md: 6 }}>
+                  <MetricBar label="CPU usage" value={clusterHealth.cpuUsagePercent} />
+                </Grid2>
+                <Grid2 size={{ xs: 12, md: 6 }}>
+                  <MetricBar label="Memory usage" value={clusterHealth.memoryUsagePercent} />
+                </Grid2>
               </Grid2>
-              <Grid2 size={{ xs: 6, md: 2.4 }}>
-                <Typography variant="body2" color="text.secondary">CPU usage</Typography>
-                <Typography variant="body1" fontWeight={700}>
-                  {String((clusterHealth.summary?.cpu as { usagePercent?: string } | undefined)?.usagePercent ?? "-")}
-                </Typography>
-              </Grid2>
-              <Grid2 size={{ xs: 6, md: 2.4 }}>
-                <Typography variant="body2" color="text.secondary">Memory usage</Typography>
-                <Typography variant="body1" fontWeight={700}>
-                  {String((clusterHealth.summary?.memory as { usagePercent?: string } | undefined)?.usagePercent ?? "-")}
-                </Typography>
-              </Grid2>
-              <Grid2 size={{ xs: 12, md: 2.4 }}>
-                <Typography variant="body2" color="text.secondary">Metrics API</Typography>
-                <StatusChip status={clusterHealth.metricsAvailable ? "active" : "warning"} />
-              </Grid2>
-            </Grid2>
+
+              <Typography variant="body2" color="text.secondary">
+                Warning events: {clusterHealth.warningEventCount} · Observed: {clusterHealth.observedAt ? new Date(clusterHealth.observedAt).toLocaleString() : "-"}
+              </Typography>
+            </Stack>
           </CardContent>
         </Card>
       )}
