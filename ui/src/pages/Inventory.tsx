@@ -3,6 +3,7 @@ import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import {
   Button,
   Card,
+  CardContent,
   Stack,
   TextField,
   Typography,

@@ -6,6 +6,7 @@ import {
   Box,
   Button,
   Card,
+  CardContent,
   Dialog,
   DialogContent,
   DialogTitle,
