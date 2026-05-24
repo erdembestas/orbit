@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Card,
-  CardContent,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -24,6 +23,7 @@ import {
   type OrbitApiClient,
   type ReasoningResponse,
 } from "../api/client";
+import DataPanel from "../components/DataPanel";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import JsonPreview from "../components/JsonPreview";
@@ -168,8 +168,7 @@ export default function FindingsPage({ client }: FindingsPageProps) {
         }
       />
 
-      <Card>
-        <CardContent sx={{ p: 2 }}>
+      <DataPanel>
           <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
             <TextField select label="Severity" value={filters.severity} onChange={(event) => setFilters({ ...filters, severity: event.target.value })} fullWidth>
               {severityOptions.map((option) => (
@@ -188,8 +187,7 @@ export default function FindingsPage({ client }: FindingsPageProps) {
             <TextField label="Namespace" value={filters.namespace} onChange={(event) => setFilters({ ...filters, namespace: event.target.value })} fullWidth />
             <TextField label="Kind" value={filters.kind} onChange={(event) => setFilters({ ...filters, kind: event.target.value })} fullWidth />
           </Stack>
-        </CardContent>
-      </Card>
+      </DataPanel>
 
       {filtered.length === 0 ? (
         <EmptyState title="No findings match the current filters" message="Try broadening the filters or refresh the page." />
@@ -218,10 +216,8 @@ export default function FindingsPage({ client }: FindingsPageProps) {
         <DialogContent>
           <Stack spacing={2}>
             {reasoning && (
-              <Card>
-                <CardContent sx={{ p: 2.5 }}>
+              <DataPanel title={reasoning.actionPlan.title}>
                   <Stack spacing={1.5}>
-                    <Typography variant="h6">{reasoning.actionPlan.title}</Typography>
                     <Typography color="text.secondary">{reasoning.reasoning.rootCause}</Typography>
                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                       <StatusChip status={reasoning.reasoning.riskLevel} />
@@ -259,8 +255,7 @@ export default function FindingsPage({ client }: FindingsPageProps) {
                       ))}
                     </Box>
                   </Stack>
-                </CardContent>
-              </Card>
+              </DataPanel>
             )}
             {selectedPack && <JsonPreview value={selectedPack.packJson} title="Evidence pack JSON" />}
           </Stack>

@@ -16,6 +16,7 @@ export default function ErrorState({ title = "Request failed", message, onRetry 
           <Alert
             severity="error"
             icon={<ErrorOutlineRoundedIcon fontSize="inherit" />}
+            variant="outlined"
             action={
               onRetry ? (
                 <Button color="inherit" size="small" startIcon={<RefreshRoundedIcon />} onClick={onRetry}>

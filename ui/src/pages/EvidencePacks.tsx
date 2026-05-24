@@ -5,7 +5,6 @@ import {
   Alert,
   Button,
   Card,
-  CardContent,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -20,6 +19,7 @@ import {
   type OrbitApiClient,
   type ReasoningResponse,
 } from "../api/client";
+import DataPanel from "../components/DataPanel";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import JsonPreview from "../components/JsonPreview";
@@ -163,8 +163,7 @@ export default function EvidencePacksPage({ client }: EvidencePacksPageProps) {
         <DialogContent>
           <Stack spacing={2}>
             {selectedPack && (
-              <Card>
-                <CardContent sx={{ p: 2 }}>
+              <DataPanel>
                   <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" spacing={2}>
                     <Stack spacing={1}>
                       <Typography variant="h6">
@@ -179,15 +178,12 @@ export default function EvidencePacksPage({ client }: EvidencePacksPageProps) {
                       <StatusChip status={`${selectedPack.tokenEstimate} tokens`} />
                     </Stack>
                   </Stack>
-                </CardContent>
-              </Card>
+              </DataPanel>
             )}
             {reasoning && (
-              <Card>
-                <CardContent sx={{ p: 2 }}>
+              <DataPanel title="Mock reasoning result">
                   <Stack spacing={1.5}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
-                      <Typography variant="h6">Mock reasoning result</Typography>
                       <StatusChip status={reasoning.actionPlan.status} />
                     </Stack>
                     <Typography color="text.secondary">{reasoning.reasoning.rootCause}</Typography>
@@ -198,8 +194,7 @@ export default function EvidencePacksPage({ client }: EvidencePacksPageProps) {
                       </Typography>
                     ))}
                   </Stack>
-                </CardContent>
-              </Card>
+              </DataPanel>
             )}
             {selectedPack && <JsonPreview value={selectedPack.packJson} title="Evidence pack JSON" />}
             {reasoning && <JsonPreview value={reasoning} title="Reasoning payload" />}

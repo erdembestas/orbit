@@ -6,11 +6,11 @@ type SeverityChipProps = {
 };
 
 const styles: Record<string, { label: string; sx: object }> = {
-  critical: { label: "critical", sx: { bgcolor: alpha("#D32F2F", 0.12), color: "#B3261E" } },
-  high: { label: "high", sx: { bgcolor: alpha("#E65100", 0.12), color: "#C2410C" } },
-  medium: { label: "medium", sx: { bgcolor: alpha("#F59E0B", 0.16), color: "#A16207" } },
-  low: { label: "low", sx: { bgcolor: alpha("#1677FF", 0.1), color: "#0B74DE" } },
-  info: { label: "info", sx: { bgcolor: alpha("#98A2B3", 0.18), color: "#475467" } },
+  critical: { label: "critical", sx: { bgcolor: alpha("#EF4444", 0.14), color: "#FCA5A5", borderColor: alpha("#EF4444", 0.22) } },
+  high: { label: "high", sx: { bgcolor: alpha("#F97316", 0.14), color: "#FDBA74", borderColor: alpha("#F97316", 0.22) } },
+  medium: { label: "medium", sx: { bgcolor: alpha("#F59E0B", 0.14), color: "#FCD34D", borderColor: alpha("#F59E0B", 0.22) } },
+  low: { label: "low", sx: { bgcolor: alpha("#14B8A6", 0.14), color: "#5EEAD4", borderColor: alpha("#14B8A6", 0.22) } },
+  info: { label: "info", sx: { bgcolor: alpha("#60A5FA", 0.12), color: "#BFDBFE", borderColor: alpha("#60A5FA", 0.22) } },
 };
 
 export default function SeverityChip({ severity }: SeverityChipProps) {
@@ -21,6 +21,7 @@ export default function SeverityChip({ severity }: SeverityChipProps) {
     <Chip
       size="small"
       label={config.label}
+      variant="outlined"
       sx={{ fontWeight: 700, textTransform: "capitalize", ...config.sx }}
     />
   );

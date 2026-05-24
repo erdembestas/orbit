@@ -46,10 +46,11 @@ export default function LoginPage({ client, onLogin }: LoginPageProps) {
         display: "grid",
         placeItems: "center",
         px: 2,
-        background: "#F7F8FA",
+        background:
+          "radial-gradient(circle at top, rgba(20, 184, 166, 0.16), transparent 26%), #090D11",
       }}
     >
-      <Card sx={{ width: "100%", maxWidth: 400, overflow: "hidden" }}>
+      <Card sx={{ width: "100%", maxWidth: 400, overflow: "hidden", bgcolor: "background.paper" }}>
         <Box
           sx={{
             px: { xs: 3, sm: 4 },
@@ -67,7 +68,7 @@ export default function LoginPage({ client, onLogin }: LoginPageProps) {
                 borderRadius: 1,
                 display: "grid",
                 placeItems: "center",
-                bgcolor: alpha("#1677FF", 0.08),
+                bgcolor: alpha("#14B8A6", 0.12),
                 color: "primary.main",
               }}
             >
@@ -79,7 +80,7 @@ export default function LoginPage({ client, onLogin }: LoginPageProps) {
               </Typography>
               <Typography variant="h6">Control Plane</Typography>
               <Typography color="text.secondary">
-                Local sign-in for the Phase 1.5 single-cluster dashboard.
+                Local sign-in for the single-cluster operational console.
               </Typography>
             </Box>
           </Stack>

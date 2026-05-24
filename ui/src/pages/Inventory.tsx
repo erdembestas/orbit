@@ -3,13 +3,13 @@ import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import {
   Button,
   Card,
-  CardContent,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { formatDateTime, type ApiError, type OrbitApiClient, type Resource } from "../api/client";
+import DataPanel from "../components/DataPanel";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import LoadingState from "../components/LoadingState";
@@ -95,8 +95,7 @@ export default function InventoryPage({ client }: InventoryPageProps) {
         }
       />
 
-      <Card>
-        <CardContent sx={{ p: 2 }}>
+      <DataPanel>
           <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
             <TextField
               label="Kind"
@@ -118,8 +117,7 @@ export default function InventoryPage({ client }: InventoryPageProps) {
               fullWidth
             />
           </Stack>
-        </CardContent>
-      </Card>
+      </DataPanel>
 
       {filteredResources.length === 0 ? (
         <EmptyState title="No resources match the current filters" message="Try clearing one or more filters." />

@@ -9,13 +9,18 @@ type CompactStatProps = {
 
 export default function CompactStat({ label, value, hint }: CompactStatProps) {
   return (
-    <Card variant="outlined">
+    <Card
+      variant="outlined"
+      sx={{
+        bgcolor: "background.paper",
+      }}
+    >
       <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
         <Stack spacing={0.5}>
           <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: "0.04em", textTransform: "uppercase" }}>
             {label}
           </Typography>
-          <Typography sx={{ fontSize: 22, fontWeight: 700, lineHeight: 1.15 }}>
+          <Typography sx={{ fontSize: 20, fontWeight: 700, lineHeight: 1.15 }}>
             {value}
           </Typography>
           {hint ? (

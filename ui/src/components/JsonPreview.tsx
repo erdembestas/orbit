@@ -14,12 +14,13 @@ export default function JsonPreview({ value, title = "JSON preview" }: JsonPrevi
       <Paper
         variant="outlined"
         sx={{
-          bgcolor: "#0E172F",
-          color: "#D8E3FF",
+          bgcolor: "#0D131A",
+          color: "#D5DEE8",
           maxHeight: { xs: 320, md: 520 },
           overflow: "auto",
           borderRadius: 1.25,
           p: 1.5,
+          borderColor: "#242B36",
         }}
       >
         <Box

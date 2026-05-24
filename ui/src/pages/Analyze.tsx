@@ -26,6 +26,7 @@ import {
   type ReasoningResponse,
   type Resource,
 } from "../api/client";
+import DataPanel from "../components/DataPanel";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import JsonPreview from "../components/JsonPreview";
@@ -224,15 +225,14 @@ export default function AnalyzePage({ client }: AnalyzePageProps) {
       {error && <Alert severity="error">{error}</Alert>}
       {reasoning && <Alert severity="info">Mock reasoning only. No action is applied.</Alert>}
 
-      <Card>
-        <CardContent sx={{ p: 2 }}>
+      <DataPanel>
           <Tabs value={tab} onChange={(_, next) => setTab(next)} sx={{ mb: 2 }}>
             <Tab label="Analyze Namespace" />
             <Tab label="Analyze Pod" />
           </Tabs>
 
           {tab === 0 ? (
-            <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} alignItems={{ md: "center" }}>
+            <Stack direction={{ xs: "column", lg: "row" }} spacing={1.5} alignItems={{ lg: "center" }}>
               <TextField
                 select
                 label="Namespace"
@@ -251,7 +251,7 @@ export default function AnalyzePage({ client }: AnalyzePageProps) {
               </Button>
             </Stack>
           ) : (
-            <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} alignItems={{ md: "center" }}>
+            <Stack direction={{ xs: "column", lg: "row" }} spacing={1.5} alignItems={{ lg: "center" }}>
               <TextField
                 select
                 label="Namespace"
@@ -283,8 +283,7 @@ export default function AnalyzePage({ client }: AnalyzePageProps) {
               </Button>
             </Stack>
           )}
-        </CardContent>
-      </Card>
+      </DataPanel>
 
       {!selectedPack ? (
         <EmptyState
@@ -301,8 +300,7 @@ export default function AnalyzePage({ client }: AnalyzePageProps) {
             ))}
           </Grid2>
 
-          <Card>
-            <CardContent sx={{ p: 2 }}>
+          <DataPanel>
               <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" spacing={1.5}>
                 <Stack spacing={0.5}>
                   <Typography variant="h6">Generated summary</Typography>
@@ -322,16 +320,15 @@ export default function AnalyzePage({ client }: AnalyzePageProps) {
                   <Button type="button" variant="contained" startIcon={<AutoAwesomeRoundedIcon />} onClick={() => void handleReason()} disabled={working}>
                     Reason over this {selectedPack.scopeType}
                   </Button>
+                  </Stack>
                 </Stack>
-              </Stack>
-            </CardContent>
-          </Card>
+          </DataPanel>
 
           <EvidenceSections pack={selectedPack} reasoning={reasoning} />
         </Stack>
       )}
 
-      <Dialog open={jsonDialogOpen} onClose={() => setJsonDialogOpen(false)} maxWidth="lg" fullWidth>
+        <Dialog open={jsonDialogOpen} onClose={() => setJsonDialogOpen(false)} maxWidth="lg" fullWidth>
         <DialogTitle>Raw evidence pack JSON</DialogTitle>
         <DialogContent>
           {selectedPack && <JsonPreview value={selectedPack.packJson} />}
@@ -412,10 +409,8 @@ function EvidenceSections({ pack, reasoning }: { pack: EvidencePack; reasoning: 
   return (
     <Stack spacing={2}>
       {reasoning && (
-        <Card>
-          <CardContent sx={{ p: 2 }}>
+        <DataPanel title="Mock reasoning">
             <Stack spacing={1}>
-              <Typography variant="h6">Mock reasoning</Typography>
               <Typography color="text.secondary">{reasoning.reasoning.rootCause}</Typography>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 <StatusChip status={reasoning.reasoning.riskLevel} />
@@ -431,29 +426,21 @@ function EvidenceSections({ pack, reasoning }: { pack: EvidencePack; reasoning: 
                 </Typography>
               ))}
             </Stack>
-          </CardContent>
-        </Card>
+        </DataPanel>
       )}
       {sections
         .filter((section) => section.items.length > 0)
         .map((section) => (
-          <Card key={section.title}>
-            <CardContent sx={{ p: 2 }}>
-              <Typography variant="h6" sx={{ mb: 1.25 }}>
-                {section.title}
-              </Typography>
+          <DataPanel key={section.title} title={section.title}>
               <Stack spacing={1}>{section.items.map(section.render)}</Stack>
-            </CardContent>
-          </Card>
+          </DataPanel>
         ))}
       {sections.every((section) => section.items.length === 0) && (
-        <Card>
-          <CardContent sx={{ p: 2 }}>
+        <DataPanel>
             <Typography color="text.secondary">
               No structured sections were available in this evidence pack. Use View raw JSON for the fallback payload.
             </Typography>
-          </CardContent>
-        </Card>
+        </DataPanel>
       )}
     </Stack>
   );
@@ -496,7 +483,7 @@ function renderKeyValueRow(item: unknown, index: number) {
     return null;
   }
   return (
-    <Card key={index} variant="outlined" sx={{ boxShadow: "none", bgcolor: "#FBFCFF" }}>
+    <Card key={index} variant="outlined" sx={{ boxShadow: "none", bgcolor: "background.paper" }}>
       <CardContent sx={{ p: 1.5 }}>
         <Grid2 container spacing={1}>
           {Object.entries(record).map(([key, value]) => (
@@ -521,7 +508,7 @@ function renderEventRow(item: unknown, index: number) {
     return null;
   }
   return (
-    <Card key={index} variant="outlined" sx={{ boxShadow: "none", bgcolor: "#FBFCFF" }}>
+    <Card key={index} variant="outlined" sx={{ boxShadow: "none", bgcolor: "background.paper" }}>
       <CardContent sx={{ p: 1.5 }}>
         <Stack spacing={0.5}>
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>

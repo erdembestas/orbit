@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { formatNullableTime, type ApiError, type ControllerStatus, type OrbitApiClient } from "../api/client";
+import DataPanel from "../components/DataPanel";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import LoadingState from "../components/LoadingState";
@@ -88,7 +89,7 @@ export default function ControllerStatusPage({ client }: ControllerStatusPagePro
           <StatCard title="Cluster" value={status?.cluster_name ?? "-"} />
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, xl: 2.4 }}>
-          <StatCard title="Mode" value={status?.mode ?? "-"} accent="#6C5CFF" />
+          <StatCard title="Mode" value={status?.mode ?? "-"} accent="#22D3EE" />
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, xl: 2.4 }}>
           <StatCard title="Last Seen" value={formatNullableTime(status?.last_seen_at)} accent="#6172F3" />
@@ -101,15 +102,11 @@ export default function ControllerStatusPage({ client }: ControllerStatusPagePro
         </Grid2>
       </Grid2>
 
-      <Card>
-        <CardContent sx={{ p: 2.25 }}>
-          <Typography variant="h6" sx={{ mb: 1.75 }}>
-            Resource counts
-          </Typography>
+      <DataPanel title="Resource counts">
           <Grid2 container spacing={1.5}>
             {cards.map(([label, value]) => (
               <Grid2 key={label} size={{ xs: 12, sm: 6, lg: 4 }}>
-                <Card variant="outlined" sx={{ bgcolor: "#FBFCFF", boxShadow: "none" }}>
+                <Card variant="outlined" sx={{ bgcolor: "background.paper", boxShadow: "none" }}>
                   <CardContent sx={{ p: 1.75 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
                       <Typography color="text.secondary">{label}</Typography>
@@ -120,8 +117,7 @@ export default function ControllerStatusPage({ client }: ControllerStatusPagePro
               </Grid2>
             ))}
           </Grid2>
-        </CardContent>
-      </Card>
+      </DataPanel>
     </Stack>
   );
 }

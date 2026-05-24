@@ -2,7 +2,6 @@ import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import {
   AppBar,
-  Avatar,
   Box,
   Chip,
   Divider,
@@ -10,14 +9,16 @@ import {
   IconButton,
   List,
   ListItemButton,
-  ListItemIcon,
   ListItemText,
   Stack,
+  Tab,
+  Tabs,
   Toolbar,
+  Tooltip,
   Typography,
   useMediaQuery,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
+import { alpha, useTheme } from "@mui/material/styles";
 import { useMemo, useState, type ReactNode } from "react";
 
 export type NavItem = {
@@ -36,7 +37,7 @@ type AppShellProps = {
   children: ReactNode;
 };
 
-const drawerWidth = 244;
+const topbarHeight = 60;
 
 export default function AppShell({
   title,
@@ -47,27 +48,39 @@ export default function AppShell({
   onLogout,
   children,
 }: AppShellProps) {
-  const isDesktop = useMediaQuery("(min-width:1024px)");
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const activeIndex = Math.max(
+    navItems.findIndex((item) => item.key === currentPage),
+    0,
+  );
 
   const drawerContent = useMemo(
     () => (
-      <Box sx={{ height: "100%", display: "flex", flexDirection: "column", p: 2 }}>
-        <Box sx={{ px: 1, pt: 0.5, pb: 2 }}>
-          <Typography variant="overline" color="primary.main" sx={{ letterSpacing: "0.16em" }}>
-            ORBIT
-          </Typography>
-          <Typography variant="h6" sx={{ mt: 0.25 }}>
-            Control Plane
-          </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
-            Phase 1.5 single-cluster mode
-          </Typography>
+      <Box sx={{ height: "100%", display: "flex", flexDirection: "column", bgcolor: "background.paper" }}>
+        <Box sx={{ px: 2, py: 2 }}>
+          <Stack direction="row" alignItems="center" spacing={1.25}>
+            <OrbitMark />
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography sx={{ fontSize: 16, fontWeight: 700 }}>Orbit</Typography>
+              <Chip
+                size="small"
+                label="beta"
+                sx={{
+                  height: 20,
+                  bgcolor: alpha("#14B8A6", 0.12),
+                  color: "primary.main",
+                  borderColor: alpha("#14B8A6", 0.22),
+                }}
+                variant="outlined"
+              />
+            </Stack>
+          </Stack>
         </Box>
-
-        <Divider sx={{ mb: 1.25 }} />
-
-        <List sx={{ flexGrow: 1, display: "grid", gap: 0.5 }}>
+        <Divider />
+        <List sx={{ px: 1.5, py: 1.5, display: "grid", gap: 0.5 }}>
           {navItems.map((item) => {
             const selected = item.key === currentPage;
             return (
@@ -79,137 +92,236 @@ export default function AppShell({
                   setMobileOpen(false);
                 }}
                 sx={{
-                  minHeight: 40,
-                  borderRadius: 1,
-                  px: 1.25,
-                  borderLeft: "3px solid",
-                  borderLeftColor: selected ? "primary.main" : "transparent",
-                  bgcolor: selected ? alpha("#1677FF", 0.08) : "transparent",
-                  color: selected ? "primary.main" : "text.primary",
-                  "&.Mui-selected": {
-                    bgcolor: alpha("#1677FF", 0.08),
-                  },
-                  "&.Mui-selected:hover, &:hover": {
-                    bgcolor: alpha("#1677FF", 0.1),
+                  minHeight: 38,
+                  borderRadius: 1.25,
+                  border: "1px solid",
+                  borderColor: selected ? alpha("#14B8A6", 0.24) : "transparent",
+                  bgcolor: selected ? alpha("#14B8A6", 0.08) : "transparent",
+                  "&:hover": {
+                    bgcolor: alpha("#14B8A6", 0.06),
                   },
                 }}
               >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 36,
-                    color: selected ? "primary.main" : "text.secondary",
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
                 <ListItemText
                   primary={item.label}
                   primaryTypographyProps={{
-                    fontWeight: selected ? 700 : 600,
-                    fontSize: 14,
+                    fontSize: 13,
+                    fontWeight: selected ? 700 : 500,
                   }}
                 />
               </ListItemButton>
             );
           })}
         </List>
-
-        <Divider sx={{ mt: 1.5, mb: 2 }} />
-        <Stack direction="row" spacing={1.25} alignItems="center" sx={{ px: 1 }}>
-          <Avatar sx={{ width: 30, height: 30, bgcolor: alpha("#1677FF", 0.12), color: "primary.main", fontSize: 13 }}>
-            {username.slice(0, 1).toUpperCase()}
-          </Avatar>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="body2" fontWeight={700} noWrap>
-              {username}
-            </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap>
-              Local admin session
-            </Typography>
-          </Box>
-        </Stack>
       </Box>
     ),
-    [currentPage, navItems, onNavigate, username],
+    [currentPage, navItems, onNavigate],
   );
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", color: "text.primary" }}>
       <AppBar
-        position="fixed"
-        color="inherit"
+        position="sticky"
+        color="transparent"
         elevation={0}
         sx={{
-          width: isDesktop ? `calc(100% - ${drawerWidth}px)` : "100%",
-          ml: isDesktop ? `${drawerWidth}px` : 0,
+          top: 0,
+          zIndex: (muiTheme) => muiTheme.zIndex.drawer + 1,
           borderBottom: "1px solid",
           borderColor: "divider",
-          bgcolor: alpha("#FFFFFF", 0.96),
-          backdropFilter: "blur(12px)",
-          boxShadow: "none",
+          bgcolor: alpha("#090D11", 0.92),
+          backdropFilter: "blur(14px)",
         }}
       >
-        <Toolbar sx={{ px: { xs: 2, md: 3 }, minHeight: { xs: 56, md: 56 } }}>
+        <Toolbar
+          sx={{
+            minHeight: `${topbarHeight}px !important`,
+            px: { xs: 1.5, sm: 2.5, lg: 3 },
+            gap: 2,
+          }}
+        >
           {!isDesktop && (
             <IconButton
               edge="start"
-              color="primary"
-              aria-label="open navigation"
+              color="inherit"
+              aria-label="Open navigation"
               onClick={() => setMobileOpen(true)}
-              sx={{ mr: 1 }}
+              sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1.25 }}
             >
-              <MenuRoundedIcon />
+              <MenuRoundedIcon fontSize="small" />
             </IconButton>
           )}
-          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            <Typography variant="h6" noWrap>
+
+          <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
+            <OrbitMark />
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+              <Typography sx={{ fontSize: 16, fontWeight: 700, lineHeight: 1 }}>
+                Orbit
+              </Typography>
+              <Chip
+                size="small"
+                label="beta"
+                variant="outlined"
+                sx={{
+                  height: 20,
+                  display: { xs: "none", sm: "inline-flex" },
+                  bgcolor: alpha("#14B8A6", 0.1),
+                  color: "primary.main",
+                  borderColor: alpha("#14B8A6", 0.22),
+                }}
+              />
+            </Stack>
+          </Stack>
+
+          {isDesktop ? (
+            <Tabs
+              value={activeIndex}
+              onChange={(_, index) => onNavigate(navItems[index].key)}
+              variant="scrollable"
+              scrollButtons={false}
+              sx={{
+                minHeight: topbarHeight,
+                flex: 1,
+                ".MuiTabs-flexContainer": {
+                  alignItems: "center",
+                  gap: 0.5,
+                },
+              }}
+            >
+              {navItems.map((item) => (
+                <Tab
+                  key={item.key}
+                  disableRipple
+                  label={item.label}
+                  sx={{
+                    minHeight: topbarHeight,
+                    fontSize: 13,
+                    px: 1.5,
+                  }}
+                />
+              ))}
+            </Tabs>
+          ) : (
+            <Typography
+              sx={{
+                flex: 1,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "text.secondary",
+                minWidth: 0,
+              }}
+              noWrap
+            >
               {title}
             </Typography>
-          </Box>
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <Chip label={username} size="small" sx={{ display: { xs: "none", sm: "inline-flex" } }} />
-            <IconButton color="primary" aria-label="logout" onClick={onLogout}>
-              <LogoutRoundedIcon />
-            </IconButton>
+          )}
+
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ ml: "auto" }}>
+            <Chip
+              label="orbit-test"
+              variant="outlined"
+              sx={{
+                display: { xs: "none", md: "inline-flex" },
+                bgcolor: alpha("#22D3EE", 0.06),
+                color: "text.primary",
+                borderColor: "divider",
+              }}
+            />
+            <Chip
+              label={username}
+              variant="outlined"
+              sx={{
+                bgcolor: alpha("#FFFFFF", 0.02),
+                color: "text.primary",
+                borderColor: "divider",
+              }}
+            />
+            <Tooltip title="Logout">
+              <IconButton
+                aria-label="logout"
+                onClick={onLogout}
+                sx={{
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 1.25,
+                  color: "text.secondary",
+                }}
+              >
+                <LogoutRoundedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
           </Stack>
         </Toolbar>
       </AppBar>
 
-      <Box sx={{ display: "flex" }}>
-        <Drawer
-          variant={isDesktop ? "permanent" : "temporary"}
-          open={isDesktop ? true : mobileOpen}
-          onClose={() => setMobileOpen(false)}
-          ModalProps={{ keepMounted: true }}
-          PaperProps={{
-            sx: {
-              width: drawerWidth,
-              borderRight: "1px solid",
-              borderColor: "divider",
-              bgcolor: "#FFFFFF",
-              overflowX: "hidden",
-            },
-          }}
-        >
-          {drawerContent}
-        </Drawer>
+      <Drawer
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        ModalProps={{ keepMounted: true }}
+        PaperProps={{
+          sx: {
+            width: 280,
+            bgcolor: "background.paper",
+            borderRight: "1px solid",
+            borderColor: "divider",
+            backgroundImage: "none",
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
 
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            width: isDesktop ? `calc(100% - ${drawerWidth}px)` : "100%",
-            ml: isDesktop ? `${drawerWidth}px` : 0,
-            minWidth: 0,
-            px: { xs: 2, sm: 3 },
-            pt: { xs: 9, md: 10 },
-            pb: 4,
-            overflowX: "hidden",
-          }}
-        >
-          {children}
-        </Box>
+      <Box
+        component="main"
+        sx={{
+          px: { xs: 1.5, sm: 2.5, lg: 3 },
+          py: 2.5,
+          width: "100%",
+          overflowX: "hidden",
+        }}
+      >
+        {children}
       </Box>
+    </Box>
+  );
+}
+
+function OrbitMark() {
+  return (
+    <Box sx={{ position: "relative", width: 24, height: 24, flexShrink: 0 }}>
+      <Box
+        sx={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: "50%",
+          border: "2px solid",
+          borderColor: "primary.main",
+          opacity: 0.9,
+        }}
+      />
+      <Box
+        sx={{
+          position: "absolute",
+          width: 9,
+          height: 9,
+          top: 1,
+          left: 1,
+          borderRadius: "50%",
+          bgcolor: "primary.main",
+          boxShadow: "0 0 14px rgba(20, 184, 166, 0.4)",
+        }}
+      />
+      <Box
+        sx={{
+          position: "absolute",
+          right: -1,
+          bottom: 2,
+          width: 9,
+          height: 9,
+          borderRadius: "50%",
+          bgcolor: "#22D3EE",
+        }}
+      />
     </Box>
   );
 }

@@ -1,14 +1,6 @@
 import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
-import {
-  Alert,
-  Button,
-  Card,
-  CardContent,
-  Grid2,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Alert, Button, Grid2, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
   formatDateTime,
@@ -20,6 +12,7 @@ import {
   type OrbitApiClient,
 } from "../api/client";
 import CompactStat from "../components/CompactStat";
+import DataPanel from "../components/DataPanel";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import HealthStatusChip from "../components/HealthStatusChip";
@@ -74,12 +67,7 @@ export default function ClusterHealthPage({ client }: ClusterHealthPageProps) {
   }
 
   if (report === null) {
-    return (
-      <EmptyState
-        title="Cluster health not implemented"
-        message="The backend did not expose cluster health APIs."
-      />
-    );
+    return <EmptyState title="Cluster health not implemented" message="The backend did not expose cluster health APIs." />;
   }
 
   if (!report?.observedAt) {
@@ -87,6 +75,8 @@ export default function ClusterHealthPage({ client }: ClusterHealthPageProps) {
       <EmptyState
         title="No cluster health snapshot yet"
         message="No cluster health snapshot has been collected yet. Wait for the controller interval and refresh."
+        actionLabel="Refresh"
+        onAction={() => void load()}
       />
     );
   }
@@ -129,7 +119,7 @@ export default function ClusterHealthPage({ client }: ClusterHealthPageProps) {
   ];
 
   return (
-    <Stack spacing={2.5}>
+    <Stack spacing={2.25}>
       <PageHeader
         title="Cluster Health"
         subtitle="Core node, namespace, and workload pressure summary."
@@ -141,7 +131,7 @@ export default function ClusterHealthPage({ client }: ClusterHealthPageProps) {
       />
 
       {!report.metricsAvailable && (
-        <Alert icon={<WarningAmberRoundedIcon />} severity="warning">
+        <Alert icon={<WarningAmberRoundedIcon />} severity="warning" variant="outlined">
           Metrics API is unavailable. Orbit is using node conditions, pod phases, and events only.
         </Alert>
       )}
@@ -164,111 +154,86 @@ export default function ClusterHealthPage({ client }: ClusterHealthPageProps) {
         </Grid2>
       </Grid2>
 
-      <Card>
-        <CardContent sx={{ p: 2 }}>
-          <Stack spacing={1.5}>
-            <Typography variant="h6">Resource summary</Typography>
-            <Grid2 container spacing={1.25}>
-              <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Node count" value={report.nodeCount} /></Grid2>
-              <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Ready nodes" value={report.readyNodeCount} /></Grid2>
-              <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Not ready" value={report.notReadyNodeCount} /></Grid2>
-              <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Warning events" value={report.warningEventCount} /></Grid2>
-              <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Running pods" value={report.runningPodCount} /></Grid2>
-              <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Pending pods" value={report.pendingPodCount} /></Grid2>
-              <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Failed pods" value={report.failedPodCount} /></Grid2>
-              <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Cluster" value={report.cluster.name || "-"} /></Grid2>
-            </Grid2>
-          </Stack>
-        </CardContent>
-      </Card>
+      <DataPanel title="Resource Summary">
+        <Grid2 container spacing={1.25}>
+          <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Node count" value={report.nodeCount} /></Grid2>
+          <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Ready nodes" value={report.readyNodeCount} /></Grid2>
+          <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Not ready" value={report.notReadyNodeCount} /></Grid2>
+          <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Warning events" value={report.warningEventCount} /></Grid2>
+          <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Running pods" value={report.runningPodCount} /></Grid2>
+          <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Pending pods" value={report.pendingPodCount} /></Grid2>
+          <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Failed pods" value={report.failedPodCount} /></Grid2>
+          <Grid2 size={{ xs: 6, md: 3 }}><CompactStat label="Cluster" value={report.cluster.name || "-"} /></Grid2>
+        </Grid2>
+      </DataPanel>
 
-      <Card>
-        <CardContent sx={{ p: 2 }}>
-          <Stack spacing={1.75}>
-            <Typography variant="h6">CPU / Memory</Typography>
-            <Grid2 container spacing={1.5}>
-              <Grid2 size={{ xs: 12, md: 6 }}>
-                <Stack spacing={1.25}>
-                  <MetricBar label="CPU usage" value={report.cpuUsagePercent} />
-                  <Typography variant="body2" color="text.secondary">
-                    Allocatable: {formatMillicores(report.allocatableCpuMillicores)} · Used: {formatMillicores(report.usedCpuMillicores)}
-                  </Typography>
-                </Stack>
-              </Grid2>
-              <Grid2 size={{ xs: 12, md: 6 }}>
-                <Stack spacing={1.25}>
-                  <MetricBar label="Memory usage" value={report.memoryUsagePercent} />
-                  <Typography variant="body2" color="text.secondary">
-                    Allocatable: {formatBytes(report.allocatableMemoryBytes)} · Used: {formatBytes(report.usedMemoryBytes)}
-                  </Typography>
-                </Stack>
-              </Grid2>
-            </Grid2>
-            {report.metricsError ? (
+      <DataPanel title="CPU / Memory" subtitle="Live metrics when metrics-server is available.">
+        <Grid2 container spacing={1.5}>
+          <Grid2 size={{ xs: 12, md: 6 }}>
+            <Stack spacing={1.25}>
+              <MetricBar label="CPU usage" value={report.cpuUsagePercent} />
               <Typography variant="body2" color="text.secondary">
-                Metrics detail: {report.metricsError}
+                Allocatable: {formatMillicores(report.allocatableCpuMillicores)} · Used: {formatMillicores(report.usedCpuMillicores)}
               </Typography>
-            ) : null}
-          </Stack>
-        </CardContent>
-      </Card>
+            </Stack>
+          </Grid2>
+          <Grid2 size={{ xs: 12, md: 6 }}>
+            <Stack spacing={1.25}>
+              <MetricBar label="Memory usage" value={report.memoryUsagePercent} />
+              <Typography variant="body2" color="text.secondary">
+                Allocatable: {formatBytes(report.allocatableMemoryBytes)} · Used: {formatBytes(report.usedMemoryBytes)}
+              </Typography>
+            </Stack>
+          </Grid2>
+        </Grid2>
+        {report.metricsError ? (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+            Metrics detail: {report.metricsError}
+          </Typography>
+        ) : null}
+      </DataPanel>
 
-      <Card>
-        <CardContent sx={{ p: 2 }}>
-          <Stack spacing={1.5}>
-            <Typography variant="h6">Node health</Typography>
-            {nodes && nodes.length > 0 ? (
-              <ResponsiveDataView
-                rows={nodes}
-                columns={nodeColumns}
-                getRowId={(item) => item.id}
-                renderMobileTitle={(item) => item.nodeName}
-                renderMobileSubtitle={(item) => `${item.podCount} pods`}
-              />
-            ) : (
-              <EmptyState title="No node health rows" message="No node health snapshots have been collected yet." />
-            )}
-          </Stack>
-        </CardContent>
-      </Card>
+      <DataPanel title="Node Health">
+        {nodes && nodes.length > 0 ? (
+          <ResponsiveDataView
+            rows={nodes}
+            columns={nodeColumns}
+            getRowId={(item) => item.id}
+            renderMobileTitle={(item) => item.nodeName}
+            renderMobileSubtitle={(item) => `${item.podCount} pods`}
+          />
+        ) : (
+          <EmptyState title="No node health rows" message="No node health snapshots have been collected yet." />
+        )}
+      </DataPanel>
 
-      <Card>
-        <CardContent sx={{ p: 2 }}>
-          <Stack spacing={1.5}>
-            <Typography variant="h6">Namespace health</Typography>
-            {namespaces && namespaces.length > 0 ? (
-              <ResponsiveDataView
-                rows={namespaces}
-                columns={namespaceColumns}
-                getRowId={(item) => item.id}
-                renderMobileTitle={(item) => item.namespace}
-                renderMobileSubtitle={(item) => `${item.podCount} pods • ${item.restartCount} restarts`}
-              />
-            ) : (
-              <EmptyState title="No namespace health rows" message="No namespace health snapshots have been collected yet." />
-            )}
-          </Stack>
-        </CardContent>
-      </Card>
+      <DataPanel title="Namespace Health">
+        {namespaces && namespaces.length > 0 ? (
+          <ResponsiveDataView
+            rows={namespaces}
+            columns={namespaceColumns}
+            getRowId={(item) => item.id}
+            renderMobileTitle={(item) => item.namespace}
+            renderMobileSubtitle={(item) => `${item.podCount} pods • ${item.restartCount} restarts`}
+          />
+        ) : (
+          <EmptyState title="No namespace health rows" message="No namespace health snapshots have been collected yet." />
+        )}
+      </DataPanel>
 
-      <Card>
-        <CardContent sx={{ p: 2 }}>
-          <Stack spacing={1.5}>
-            <Typography variant="h6">Health history</Typography>
-            {history && history.length > 0 ? (
-              <ResponsiveDataView
-                rows={history}
-                columns={historyColumns}
-                getRowId={(item) => item.id}
-                renderMobileTitle={(item) => formatDateTime(item.observedAt)}
-                renderMobileSubtitle={(item) => `${item.healthStatus} • ${item.healthScore}`}
-              />
-            ) : (
-              <EmptyState title="No health history yet" message="Wait for the next controller interval and refresh." />
-            )}
-          </Stack>
-        </CardContent>
-      </Card>
+      <DataPanel title="Health History">
+        {history && history.length > 0 ? (
+          <ResponsiveDataView
+            rows={history}
+            columns={historyColumns}
+            getRowId={(item) => item.id}
+            renderMobileTitle={(item) => formatDateTime(item.observedAt)}
+            renderMobileSubtitle={(item) => `${item.healthStatus} • ${item.healthScore}`}
+          />
+        ) : (
+          <EmptyState title="No health history yet" message="Wait for the next controller interval and refresh." />
+        )}
+      </DataPanel>
     </Stack>
   );
 }

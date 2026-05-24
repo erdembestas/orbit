@@ -12,16 +12,18 @@ export default function PageHeader({ title, subtitle, actions }: PageHeaderProps
       direction={{ xs: "column", md: "row" }}
       justifyContent="space-between"
       alignItems={{ xs: "flex-start", md: "center" }}
-      spacing={2}
+      spacing={1.5}
     >
       <Box sx={{ minWidth: 0 }}>
-        <Typography variant="h4" sx={{ mb: 0.5 }}>
+        <Typography variant="h4" sx={{ mb: 0.25 }}>
           {title}
         </Typography>
-        <Typography variant="subtitle1">{subtitle}</Typography>
+        <Typography variant="subtitle1" sx={{ maxWidth: 760 }}>
+          {subtitle}
+        </Typography>
       </Box>
       {actions && (
-        <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
+        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           {actions}
         </Stack>
       )}

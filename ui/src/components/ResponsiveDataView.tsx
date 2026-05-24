@@ -43,13 +43,13 @@ export default function ResponsiveDataView<T>({
 
   if (isMobile) {
     return (
-      <Stack spacing={1.5}>
+      <Stack spacing={1.25}>
         {rows.map((row) => (
-          <Card key={getRowId(row)}>
-            <CardContent sx={{ p: 1.75 }}>
+          <Card key={getRowId(row)} variant="outlined">
+            <CardContent sx={{ p: 1.5 }}>
               <Stack spacing={1.25}>
                 <Stack spacing={0.5}>
-                  <Typography variant="h6" sx={{ fontSize: 15 }}>
+                  <Typography variant="h6" sx={{ fontSize: 14 }}>
                     {renderMobileTitle(row)}
                   </Typography>
                   {renderMobileSubtitle && (
@@ -59,7 +59,7 @@ export default function ResponsiveDataView<T>({
                   )}
                 </Stack>
                 <Divider />
-                <Stack spacing={1}>
+                <Stack spacing={0.9}>
                   {columns
                     .filter((column) => column.mobilePriority !== false)
                     .map((column) => (

@@ -16,12 +16,12 @@ export default function MetricBar({
   const normalized = typeof value === "number" ? Math.max(0, Math.min(100, value)) : null;
   const barColor =
     normalized == null
-      ? "#D0D5DD"
+      ? "#475467"
       : normalized >= critical
-        ? "#D92D20"
+        ? "#EF4444"
         : normalized >= warn
-          ? "#F79009"
-          : "#1677FF";
+          ? "#F59E0B"
+          : "#14B8A6";
 
   return (
     <Stack spacing={0.75}>
@@ -38,9 +38,9 @@ export default function MetricBar({
           variant="determinate"
           value={normalized ?? 0}
           sx={{
-            height: 6,
+            height: 7,
             borderRadius: 999,
-            bgcolor: "#EEF2F6",
+            bgcolor: "#1B2330",
             "& .MuiLinearProgress-bar": {
               borderRadius: 999,
               backgroundColor: barColor,

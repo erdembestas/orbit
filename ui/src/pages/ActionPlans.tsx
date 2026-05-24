@@ -3,7 +3,6 @@ import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import {
   Button,
   Card,
-  CardContent,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -12,6 +11,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { formatDateTime, type ActionPlan, type ApiError, type OrbitApiClient } from "../api/client";
+import DataPanel from "../components/DataPanel";
 import EmptyState from "../components/EmptyState";
 import ErrorState from "../components/ErrorState";
 import JsonPreview from "../components/JsonPreview";
@@ -120,8 +120,7 @@ export default function ActionPlansPage({ client }: ActionPlansPageProps) {
         <DialogContent>
           {selectedPlan && (
             <Stack spacing={2}>
-              <Card>
-                  <CardContent sx={{ p: 2 }}>
+              <DataPanel>
                     <Stack spacing={1.25}>
                     <Typography color="text.secondary">{selectedPlan.summary}</Typography>
                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
@@ -130,8 +129,7 @@ export default function ActionPlansPage({ client }: ActionPlansPageProps) {
                       <StatusChip status={formatDateTime(selectedPlan.createdAt)} />
                     </Stack>
                   </Stack>
-                </CardContent>
-              </Card>
+              </DataPanel>
               <JsonPreview value={selectedPlan.planJson} title="Action plan JSON" />
             </Stack>
           )}

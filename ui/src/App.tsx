@@ -35,8 +35,8 @@ const navItems: NavItem[] = [
   { key: "findings", label: "Findings", icon: <FactCheckRoundedIcon /> },
   { key: "evidence", label: "Evidence Packs", icon: <DescriptionRoundedIcon /> },
   { key: "plans", label: "Action Plans", icon: <AssignmentRoundedIcon /> },
-  { key: "rules", label: "Finding Rules", icon: <PolicyRoundedIcon /> },
   { key: "controller", label: "Controller Status", icon: <MonitorHeartRoundedIcon /> },
+  { key: "rules", label: "Finding Rules", icon: <PolicyRoundedIcon /> },
 ];
 
 export default function App() {
